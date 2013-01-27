@@ -43,15 +43,15 @@ static void init_md5 (void)
 	md5[3] = 0x10325476;
 }
 
+MD5_CTX md5_ctx;
+
 void test_pass (void)
 {
-	/* places result in "md5" */
-	extern void md5_compress(uint32_t *state, uint32_t *block);
-	
-	/* Compute md5 using prepared 64-uint32_t block */
+	/* Compute md5 */
 
-	init_md5 ();
-	md5_compress(md5, real_key);
+	MD5_Init(&md5_ctx);
+	MD5_Update(&md5_ctx, real_key, 9);
+	MD5_Final(md5, &md5_ctx);
 
 	/* Decrypts bytes 32-63 then 0-31 of hash_and_verifier */
 
@@ -62,8 +62,9 @@ void test_pass (void)
 
 	/* Check hash */
 
-	init_md5 ();
-	md5_compress(md5, (uint32_t *) (hash_and_verifier + 16));
+	MD5_Init(&md5_ctx);
+	MD5_Update(&md5_ctx, hash_and_verifier + 16, 16);
+	MD5_Final(md5, &md5_ctx);
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
 		printf("match!\n");

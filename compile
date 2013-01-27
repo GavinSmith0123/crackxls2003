@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm xls_crack # Avoid testing old binary if compilation fails
+cc -O5 -fomit-frame-pointer -march=native -mtune=native crackxls2003.c -o xls_crack -lssl
+
