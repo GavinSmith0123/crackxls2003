@@ -1,5 +1,11 @@
 #!/bin/sh
 
 rm xls_crack # Avoid testing old binary if compilation fails
-cc -O5 -fomit-frame-pointer -march=native -mtune=native crackxls2003.c -o xls_crack -lssl
+
+
+g++ -c -std=c++0x extract.cpp
+g++ -c -std=c++0x pole.cpp 
+gcc -c -std=c99 crackxls2003.c -O5 -fomit-frame-pointer -march=native -mtune=native
+
+g++ -o xls_crack -lssl crackxls2003.o extract.o pole.o
 

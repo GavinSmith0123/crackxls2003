@@ -114,6 +114,23 @@ void read_hex (uint8_t *target, char *source, int n)
 	}
 }
 
+
+extern void extract (unsigned char *);
+
+void load_data_from_file (void)
+{
+	char FilePass[54];
+	extract (FilePass);
+	
+	print_hex(FilePass, 54);
+
+	memcpy (data + 16, FilePass + 22, 16); /* EncryptedVerifier */
+	print_hex (data + 16, 16);
+	memcpy (data, FilePass + 38, 16); /* EncryptedVerifierHash */
+	print_hex (data, 16);
+
+}
+
 void load_data (int argc, char **argv)
 {
 	uint8_t *real_key8;
@@ -124,9 +141,11 @@ void load_data (int argc, char **argv)
 		exit(1);
 	}
 
+	load_data_from_file ();
+	/*
 	read_hex (data+16, argv[1], 16);
 	read_hex (data, argv[2], 16);
-
+	*/
 	real_key8  = (uint8_t *) real_key;
 
 	/* clear key to zero */
