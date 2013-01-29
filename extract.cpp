@@ -10,8 +10,8 @@
 #include "pole.h"
 
 
-extern "C" void extract(unsigned char *record_out) {
-  POLE::Storage* storage = new POLE::Storage( "protected_document.xls" );
+extern "C" void extract(char *file_name, unsigned char *record_out) {
+  POLE::Storage* storage = new POLE::Storage(file_name );
   storage->open();
   if( storage->result() != POLE::Storage::Ok )
   {

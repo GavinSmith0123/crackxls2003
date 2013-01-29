@@ -115,12 +115,12 @@ void read_hex (uint8_t *target, char *source, int n)
 }
 
 
-extern void extract (unsigned char *);
+extern void extract (char *file_name, unsigned char *FilePass);
 
 void load_data_from_file (void)
 {
 	char FilePass[54];
-	extract (FilePass);
+	extract ("protected_document.xls", FilePass);
 	
 	print_hex(FilePass, 54);
 
