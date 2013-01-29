@@ -1,8 +1,5 @@
 #!/bin/sh
 
-rm crackxls2003 # Avoid testing old binary if compilation fails
-
-
 g++ -c -std=c++0x extract.cpp
 g++ -c -std=c++0x pole.cpp 
 gcc -c -std=c99 crackxls2003.c -O5 -fomit-frame-pointer -march=native -mtune=native
