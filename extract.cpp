@@ -16,6 +16,7 @@ extern "C" void extract(char *file_name, unsigned char *record_out) {
   if( storage->result() != POLE::Storage::Ok )
   {
     std::cout << "Error on file " << std::endl;
+    exit(1);
     return;
   }
 
