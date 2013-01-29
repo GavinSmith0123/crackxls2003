@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <getopt.h>
 
 #include <openssl/md5.h>
 #include <openssl/rc4.h>
@@ -117,10 +118,10 @@ void read_hex (uint8_t *target, char *source, int n)
 
 extern void extract (char *file_name, unsigned char *FilePass);
 
-void load_data_from_file (void)
+void load_data_from_file (char *file_name)
 {
 	char FilePass[54];
-	extract ("protected_document.xls", FilePass);
+	extract (file_name, FilePass);
 	
 	print_hex(FilePass, 54);
 
@@ -141,7 +142,7 @@ void load_data (int argc, char **argv)
 		exit(1);
 	}
 
-	load_data_from_file ();
+	/* load_data_from_file (); */
 	/*
 	read_hex (data+16, argv[1], 16);
 	read_hex (data, argv[2], 16);
@@ -179,9 +180,60 @@ void load_data (int argc, char **argv)
 
 }
 
+/* Use getopt() to parse command line */
+void parse_cmd(int argc, char **argv)
+{
+	int c, index;
+	while (1) {
+		struct option options[] =
+		{
+		 {"start", required_argument, 0, 's'},
+		 {0, 0, 0, 0}
+		};
+		int option_idx = 0;
+
+		c = getopt_long (argc, argv, "s:", options, &option_idx);
+
+		if (c == -1) break; /* End of options */
+		
+		switch (c) {
+		case 's': /* '--start' */
+			{
+			uint8_t *real_key8  = (uint8_t *) real_key;
+			int n;
+
+			n = sscanf (optarg, "%hhx %hhx %hhx %hhx %hhx",
+				&real_key8[0], 
+				&real_key8[1], 
+				&real_key8[2], 
+				&real_key8[3], 
+				&real_key8[4]);
+			if (n != 5) {
+				fprintf(stderr,
+					"Could not parse start location\n");
+				exit(1);
+			}
+			break;
+			}
+		case '?':
+			exit (1);
+			break;
+		}
+
+	}
+	if (optind == argc) {
+		fprintf(stderr, "No filename provided\n");
+		exit (1);
+	}
+	load_data_from_file (argv[optind]);
+ 	for (index = optind; index < argc; index++)
+		printf ("Non-option argument %s\n", argv[index]);
+
+}
+
 main (int argc, char **argv)
 {
-	load_data(argc, argv);
+	parse_cmd (argc, argv);
 	printf("data loaded\n");
 	crack_pass ();
 }
