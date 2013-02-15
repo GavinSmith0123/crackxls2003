@@ -20,6 +20,7 @@
 
 #include <time.h>
 #include <gmp.h>
+#include <signal.h>
 
 #include <openssl/md5.h>
 #include <openssl/rc4.h>
@@ -52,6 +53,8 @@ void cracking_stats (void)
 	mpf_t n_keys_f;
 	char *n_keys_str;
 
+	mpz_t mpz_low;
+
 	double time_used;
 	mpf_t mpf_time_used;
 
@@ -62,13 +65,17 @@ void cracking_stats (void)
 
 	printf("CPU time used: %f seconds\n", time_used);
 
+	/* Value of subtraction will always be positive */
 	mpz_init_set_si (n_keys, real_key[1] - real_key_start[1]);
 
 	/* multiply by 2^32 */
 	mpz_mul_si (n_keys, n_keys, 1 << 16);
 	mpz_mul_si (n_keys, n_keys, 1 << 16);
 
-	mpz_add_ui (n_keys, n_keys, real_key[0] - real_key_start[0]);
+	/* n_keys += real_key[0] - real_key_start[0] */
+	mpz_init_set_ui(mpz_low, real_key[0]);
+	mpz_sub_ui(mpz_low, mpz_low, real_key_start[0]);
+	mpz_add (n_keys, n_keys, mpz_low);
 	
 	n_keys_str = mpz_get_str (NULL, 10, n_keys);
 	printf("Number of keys tested: %s\n", n_keys_str);
@@ -99,7 +106,7 @@ void test_pass (void)
 
 	MD5_Init(&md5_ctx);
 	MD5_Update(&md5_ctx, real_key, 9);
-	MD5_Final(md5, &md5_ctx);
+	MD5_Final((unsigned char *) md5, &md5_ctx);
 
 	/* Decrypts bytes 32-63 then 0-31 of hash_and_verifier */
 
@@ -112,7 +119,7 @@ void test_pass (void)
 
 	MD5_Init(&md5_ctx);
 	MD5_Update(&md5_ctx, hash_and_verifier + 16, 16);
-	MD5_Final(md5, &md5_ctx);
+	MD5_Final((unsigned char *)md5, &md5_ctx);
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
 		printf("Key found!\n");
@@ -242,8 +249,16 @@ void parse_cmd(int argc, char **argv)
 	printf("Data successfully loaded from %s\n", file_name);
 }
 
+void catch_signal (int sig)
+{
+	printf("Program interrupted - ending program...\n");
+	cracking_stats();
+	exit(0);
+}
+
 main (int argc, char **argv)
 {
+	signal(SIGINT, catch_signal);
 	parse_cmd (argc, argv);
 	crack_pass ();
 }
