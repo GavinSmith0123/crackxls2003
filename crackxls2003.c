@@ -88,7 +88,7 @@ void crack_pass (void)
 			real_key[0]++;
 		if (!(real_key[0] & 0x0000FFFF)) {
 			printf("Testing .. .. ");
-			print_hex (real_key + 2, 3);
+			print_hex ((uint8_t *) real_key + 2, 3);
 		}
 		} while ((real_key[0]) != 0);
 
