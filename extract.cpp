@@ -39,7 +39,7 @@ extern "C" void extract(char *file_name, unsigned char *record_out) {
 	
 	int id = id_and_size[0] + (id_and_size[1] << 8);
 	int size = id_and_size[2] + (id_and_size[3] << 8);
-	std::cerr << id << "/" << size << "\n";
+	// std::cerr << id << "/" << size << "\n";
 
 	switch (id) {
 	case 0x002f: //FilePass

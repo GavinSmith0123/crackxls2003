@@ -21,6 +21,7 @@
 #include <openssl/md5.h>
 #include <openssl/rc4.h>
 
+const char *file_name;
 /* encrypted hash_and_verifier */
 uint8_t data[32];
 
@@ -68,10 +69,9 @@ void test_pass (void)
 	MD5_Final(md5, &md5_ctx);
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
-		printf("match!\n");
-		printf("key is ");
+		printf("Key found!\n");
+		printf("Key is ");
 		print_hex (real_key, 5);
-		print_hex (hash_and_verifier, 32);
 		exit(0);
 	}
 }
@@ -87,8 +87,8 @@ void crack_pass (void)
 
 			real_key[0]++;
 		if (!(real_key[0] & 0x0000FFFF)) {
-			printf("Testing ");
-			print_hex (real_key, 5);
+			printf("Testing .. .. ");
+			print_hex (real_key + 2, 3);
 		}
 		} while ((real_key[0]) != 0);
 
@@ -123,60 +123,12 @@ void load_data_from_file (char *file_name)
 	char FilePass[54];
 	extract (file_name, FilePass);
 	
-	print_hex(FilePass, 54);
+	/* print_hex(FilePass, 55); */
 
 	memcpy (data + 16, FilePass + 22, 16); /* EncryptedVerifier */
-	print_hex (data + 16, 16);
+	// print_hex (data + 16, 16);
 	memcpy (data, FilePass + 38, 16); /* EncryptedVerifierHash */
-	print_hex (data, 16);
-
-}
-
-void load_data (int argc, char **argv)
-{
-	uint8_t *real_key8;
-	uint32_t i;
-
-	if (argc <= 2) {
-		fprintf(stderr, "Bad arguments.\n");
-		exit(1);
-	}
-
-	/* load_data_from_file (); */
-	/*
-	read_hex (data+16, argv[1], 16);
-	read_hex (data, argv[2], 16);
-	*/
-	real_key8  = (uint8_t *) real_key;
-
-	/* clear key to zero */
-	for (i = 0; i < 64; i++) {
-		real_key8[i] = 0;
-	}
-
-	if (argc > 2) {
-		read_hex (&real_key8[0], argv[3], 1);
-		read_hex (&real_key8[1], argv[4], 1);
-		read_hex (&real_key8[2], argv[5], 1);
-		read_hex (&real_key8[3], argv[6], 1);
-		read_hex (&real_key8[4], argv[7], 1);
-	}
-
-	real_key8[9] = 0x80; /* bit at end of data */
-	real_key8[56] = 0x48; /*correct way to represent 9 */
-
-	/* initialize verifier padding */
-
-	int j;
-	for (j = 32; j < 32 + (64 - 16); j++) {
-		hash_and_verifier[j] = 0;
-	}
-	hash_and_verifier[32] = 0x80; /* bit at end of data */
-
-	/* last 64 bits represent 16 */
-	/* I obtained this value from a MD5 implementation that was known to
-	 * work */
-	hash_and_verifier[72] = 0x80;
+	// print_hex (data, 16);
 
 }
 
@@ -225,15 +177,13 @@ void parse_cmd(int argc, char **argv)
 		fprintf(stderr, "No filename provided\n");
 		exit (1);
 	}
-	load_data_from_file (argv[optind]);
- 	for (index = optind; index < argc; index++)
-		printf ("Non-option argument %s\n", argv[index]);
-
+	file_name = argv[optind];
+	load_data_from_file (file_name);
+	printf("Data successfully loaded from %s\n", file_name);
 }
 
 main (int argc, char **argv)
 {
 	parse_cmd (argc, argv);
-	printf("data loaded\n");
 	crack_pass ();
 }
