@@ -37,14 +37,6 @@ uint32_t real_key[16];
 
 void print_hex (uint8_t *array, int n);
 
-static void init_md5 (void)
-{
-	md5[0] = 0x67452301;
-	md5[1] = 0xEFCDAB89;
-	md5[2] = 0x98BADCFE;
-	md5[3] = 0x10325476;
-}
-
 MD5_CTX md5_ctx;
 
 void test_pass (void)
