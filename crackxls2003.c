@@ -244,7 +244,7 @@ void parse_cmd(int argc, char **argv)
 void catch_signal (int sig)
 {
 	printf("Program interrupted - ending program...\n");
-	cracking_stats();
+	if (flag_test_speed) cracking_stats();
 	exit(0);
 }
 
