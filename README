@@ -11,3 +11,5 @@ The program will read what it needs from the file and print its progress in work
 $ ./crackxls2003 -s "00 00 00 00 00" [filename.xls]
 
 The program will display a working key if it finds one. Note the program does not decrypt the file - another program must be used for this.
+
+Send comments and bug reports to GavinSmith0123@gmail.com.
