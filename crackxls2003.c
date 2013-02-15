@@ -1,6 +1,6 @@
 /* crackxls2003.c - recover encryption keys for Microsoft Excel 2003 worksheets
  *
- * Copyright (C) 2012 Gavin Smith
+ * Copyright (C) 2013 Gavin Smith
  * 
  * This file is distributed under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of the
