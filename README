@@ -1,0 +1,13 @@
+crackxls2003
+
+This program may be used to break the encryption on Microsoft Excel XP/2002/2003 files which have been encrypted using the RC4 method. These files are encrypted using a 40-bit-long key. It will not work on files encrypted using later versions or versions 8.0 or earlier.
+
+Run the command with
+
+$ ./crackxls2003 [filename.xls]
+
+The program will read what it needs from the file and print its progress in working through the possible keys. You can stop the program and resume where you left off by using the "--start" or "-s" option, whose argument is 5 hexadecimal bytes separated by spaces, and specifies a key to start searching from. Example:
+
+$ ./crackxls2003 -s "00 00 00 00 00" [filename.xls]
+
+The program will display a working key if it finds one. Note the program does not decrypt the file - another program must be used for this.
