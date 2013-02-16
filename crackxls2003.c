@@ -72,9 +72,10 @@ void cracking_stats (void)
 	mpz_mul_si (n_keys, n_keys, 1 << 16);
 	mpz_mul_si (n_keys, n_keys, 1 << 16);
 
-	/* n_keys += real_key[0] - real_key_start[0] */
+	/* n_keys += real_key[0] - real_key_start[0] + 1 */
 	mpz_init_set_ui(mpz_low, real_key[0]);
 	mpz_sub_ui(mpz_low, mpz_low, real_key_start[0]);
+	mpz_add_ui(mpz_low, mpz_low, 1);
 	mpz_add (n_keys, n_keys, mpz_low);
 	
 	n_keys_str = mpz_get_str (NULL, 10, n_keys);
