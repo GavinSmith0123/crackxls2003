@@ -82,6 +82,7 @@ void cracking_stats (void)
 	printf("Number of keys tested: %s\n", n_keys_str);
 	free (n_keys_str);
 
+	if (time_used == 0.0) return; /* Don't / by 0 */
 	mpf_init (n_keys_f);
 	mpf_set_z (n_keys_f, n_keys);
 	mpf_init_set_d (mpf_time_used, time_used);
