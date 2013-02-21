@@ -11,6 +11,9 @@
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details. */ 
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +25,11 @@
 #include <gmp.h>
 #include <signal.h>
 
+#ifdef USE_SOLAR
+#include "solar-md5/md5.h"
+#else
 #include <openssl/md5.h>
+#endif
 #include <openssl/rc4.h>
 
 const char *file_name;
