@@ -103,13 +103,29 @@ void cracking_stats (void)
 	
 MD5_CTX md5_ctx;
 
+static void init_md5 (void)
+{
+	md5[0] = 0x67452301;
+	md5[1] = 0xEFCDAB89;
+	md5[2] = 0x98BADCFE;
+	md5[3] = 0x10325476;
+}
+
 void test_pass (void)
 {
 	/* Compute md5 */
 
+#ifndef USE_ASM
 	MD5_Init(&md5_ctx);
 	MD5_Update(&md5_ctx, real_key, 9);
 	MD5_Final((unsigned char *) md5, &md5_ctx);
+#else
+	/* places result in "md5" */
+	extern void md5_compress(uint32_t *state, uint32_t *block);
+	
+	init_md5 ();
+	md5_compress(md5, real_key);
+#endif
 
 	/* Decrypts bytes 32-63 then 0-31 of hash_and_verifier */
 
