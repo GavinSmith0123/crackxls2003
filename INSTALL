@@ -1,0 +1,21 @@
+This program depends on the OpenSSL library (http://www.openssl.org/).
+
+Unix or GNU/Linux
+=================
+
+Run
+
+$ ./configure 
+
+followed by
+
+$ make
+
+The "crackxls2003" executable will be created in the build directory.
+
+A choice of implementation algorithms may be chosen using the --with-algo argument to configure. Most of these are experimental and not all the necessary files are included with the distributed crackxls2003 source.
+
+Windows
+=======
+
+crackxls2003 compiles under Cygwin. For a standalone executable which doesn't depend on the Cygwin runtime you will have to install the OpenSSL library and not use the Cygwin version. For convenience, a (not-necessarily up-to-date) Windows executable is included with the source.
