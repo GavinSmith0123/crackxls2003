@@ -45,8 +45,10 @@ uint8_t hash_and_verifier[80];
 
 uint32_t md5[4];
 
-/* real_key is appended with 00 00 00 00 */
-/* and then md5'd which uses 64 byte blocks */
+/* First 5 bytes are the key space */
+/* 6th-9th bytes are 00 00 00 00 */
+/* md5 hash is taken of first 9 bytes */
+/* Full 64 bytes may be used in some implementation algorithms */
 uint32_t real_key[16];
 
 /* Used to calculate the total number of keys tested */
@@ -190,6 +192,7 @@ void load_data_from_file (const char *file_name)
 	// print_hex (data + 16, 16);
 	memcpy (data, FilePass + 38, 16); /* EncryptedVerifierHash */
 	// print_hex (data, 16);
+	
 
 }
 
@@ -197,6 +200,9 @@ void load_data_from_file (const char *file_name)
 void parse_cmd(int argc, char **argv)
 {
 	int c;
+
+	memset(real_key, 0, 64);
+
 	while (1) {
 		struct option options[] =
 		{
@@ -246,6 +252,13 @@ void parse_cmd(int argc, char **argv)
 	file_name = argv[optind];
 	load_data_from_file (file_name);
 	printf("Data successfully loaded from %s\n", file_name);
+
+	/* Initialise real_key to point to low level md5 64-byte block */
+	/* This may be used by some choices of algorithm */
+	uint8_t *real_key8;
+	real_key8  = (uint8_t *) real_key;
+	real_key8[9] = 0x80; /* bit at end of data */
+	real_key8[56] = 0x48; /*correct way to represent 9 */
 }
 
 void catch_signal (int sig)
