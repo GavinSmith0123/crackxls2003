@@ -1,0 +1,9 @@
+The files crackxls2003.c and extract.cpp are licensed under the GPL version 3 or later. For a definitive copyright notice and licence, see the individual files. The text of the GPL is contained in the LICENSE.GPL file included with this project.
+
+Files from the POLE project (http://pole.berlos.de) are copyright 2002-2005 by Ariya Hidayat. See the headers of the files pole.h and pole.cpp for licensing information.
+
+Files not derived from those already mentioned are copyright Gavin Smith and
+licensed under GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
