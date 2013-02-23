@@ -136,9 +136,14 @@ void test_pass (void)
 
 	/* Check hash */
 
+#ifndef USE_ASM
 	MD5_Init(&md5_ctx);
 	MD5_Update(&md5_ctx, hash_and_verifier + 16, 16);
 	MD5_Final((unsigned char *)md5, &md5_ctx);
+#else
+	init_md5 ();
+	md5_compress(md5, (uint32_t *) (hash_and_verifier + 16));
+#endif
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
 		printf("Key found!\n");
@@ -153,6 +158,16 @@ void test_pass (void)
 
 void crack_pass (void)
 {
+#ifdef USE_ASM
+	memset(hash_and_verifier, 0, sizeof(hash_and_verifier));
+	hash_and_verifier[32] = 0x80; /* bit at end of data */
+
+	/* last 64 bits represent 16 */
+	/* I obtained this value from a MD5 implementation that was known to
+	 * work */
+	hash_and_verifier[72] = 0x80;
+#endif
+
 	if (flag_test_speed) {
 		start_time = clock();
 		real_key_start [0] = real_key [0];
