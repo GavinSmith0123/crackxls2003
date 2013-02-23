@@ -43,8 +43,6 @@ uint8_t data[32];
 /* 80 = 16 + 16 + 48 */
 uint8_t hash_and_verifier[80];
 
-uint32_t md5[4];
-
 /* First 5 bytes are the key space */
 /* 6th-9th bytes are 00 00 00 00 */
 /* md5 hash is taken of first 9 bytes */
@@ -101,30 +99,42 @@ void cracking_stats (void)
 	printf("Number of keys tested / second: %f\n", keys_per_second);
 }
 	
-MD5_CTX md5_ctx;
 
-static void init_md5 (void)
+void test_pass (void)
 {
+	MD5_CTX md5_ctx;
+	uint32_t md5[4];
+
+	/* Compute md5 */
+
+#ifdef USE_REGULAR
+	MD5_Init(&md5_ctx);
+	MD5_Update(&md5_ctx, real_key, 9);
+	MD5_Final((unsigned char *) md5, &md5_ctx);
+#endif
+
+#ifdef USE_ASM
+	/* places result in "md5" */
+	extern void md5_compress(uint32_t *state, uint32_t *block);
+	
 	md5[0] = 0x67452301;
 	md5[1] = 0xEFCDAB89;
 	md5[2] = 0x98BADCFE;
 	md5[3] = 0x10325476;
-}
 
-void test_pass (void)
-{
-	/* Compute md5 */
-
-#ifndef USE_ASM
-	MD5_Init(&md5_ctx);
-	MD5_Update(&md5_ctx, real_key, 9);
-	MD5_Final((unsigned char *) md5, &md5_ctx);
-#else
-	/* places result in "md5" */
-	extern void md5_compress(uint32_t *state, uint32_t *block);
-	
-	init_md5 ();
 	md5_compress(md5, real_key);
+#endif
+#ifdef USE_SOLAR
+	md5_ctx.a = 0x67452301;
+	md5_ctx.b = 0xefcdab89;
+	md5_ctx.c = 0x98badcfe;
+	md5_ctx.d = 0x10325476;
+
+	md5_body(&md5_ctx, real_key, 64);
+	md5[0] = md5_ctx.a; 
+	md5[1] = md5_ctx.b; 
+	md5[2] = md5_ctx.c; 
+	md5[3] = md5_ctx.d; 
 #endif
 
 	/* Decrypts bytes 32-63 then 0-31 of hash_and_verifier */
@@ -136,13 +146,30 @@ void test_pass (void)
 
 	/* Check hash */
 
-#ifndef USE_ASM
+#ifdef USE_ASM
+	md5[0] = 0x67452301;
+	md5[1] = 0xEFCDAB89;
+	md5[2] = 0x98BADCFE;
+	md5[3] = 0x10325476;
+
+	md5_compress(md5, (uint32_t *) (hash_and_verifier + 16));
+#endif
+#ifdef USE_SOLAR
+	md5_ctx.a = 0x67452301;
+	md5_ctx.b = 0xefcdab89;
+	md5_ctx.c = 0x98badcfe;
+	md5_ctx.d = 0x10325476;
+
+	md5_body(&md5_ctx, hash_and_verifier + 16, 64);
+	md5[0] = md5_ctx.a; 
+	md5[1] = md5_ctx.b; 
+	md5[2] = md5_ctx.c; 
+	md5[3] = md5_ctx.d; 
+#endif
+#ifdef USE_REGULAR	
 	MD5_Init(&md5_ctx);
 	MD5_Update(&md5_ctx, hash_and_verifier + 16, 16);
 	MD5_Final((unsigned char *)md5, &md5_ctx);
-#else
-	init_md5 ();
-	md5_compress(md5, (uint32_t *) (hash_and_verifier + 16));
 #endif
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
@@ -158,7 +185,6 @@ void test_pass (void)
 
 void crack_pass (void)
 {
-#ifdef USE_ASM
 	memset(hash_and_verifier, 0, sizeof(hash_and_verifier));
 	hash_and_verifier[32] = 0x80; /* bit at end of data */
 
@@ -166,7 +192,6 @@ void crack_pass (void)
 	/* I obtained this value from a MD5 implementation that was known to
 	 * work */
 	hash_and_verifier[72] = 0x80;
-#endif
 
 	if (flag_test_speed) {
 		start_time = clock();
