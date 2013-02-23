@@ -125,7 +125,7 @@ void test_pass (void)
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
 		printf("Key found!\n");
 		printf("Key is ");
-		print_hex (real_key, 5);
+		print_hex ((uint8_t *) real_key, 5);
 		if (flag_test_speed) {
 			cracking_stats ();
 		}
@@ -135,8 +135,6 @@ void test_pass (void)
 
 void crack_pass (void)
 {
-	int i;
-
 	if (flag_test_speed) {
 		start_time = clock();
 		real_key_start [0] = real_key [0];
@@ -179,9 +177,9 @@ void read_hex (uint8_t *target, char *source, int n)
 }
 
 
-extern void extract (char *file_name, unsigned char *FilePass);
+extern void extract (const char *file_name, unsigned char *FilePass);
 
-void load_data_from_file (char *file_name)
+void load_data_from_file (const char *file_name)
 {
 	char FilePass[54];
 	extract (file_name, FilePass);
@@ -198,7 +196,7 @@ void load_data_from_file (char *file_name)
 /* Use getopt() to parse command line */
 void parse_cmd(int argc, char **argv)
 {
-	int c, index;
+	int c;
 	while (1) {
 		struct option options[] =
 		{

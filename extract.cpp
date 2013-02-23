@@ -23,7 +23,7 @@
 #include "pole.h"
 
 
-extern "C" void extract(char *file_name, unsigned char *record_out) {
+extern "C" void extract(const char *file_name, unsigned char *record_out) {
   POLE::Storage* storage = new POLE::Storage(file_name );
   storage->open();
   if( storage->result() != POLE::Storage::Ok )
@@ -32,8 +32,6 @@ extern "C" void extract(char *file_name, unsigned char *record_out) {
     exit(1);
     return;
   }
-
-  int record_id, record_size;
 
   POLE::Stream* stream = new POLE::Stream( storage, "Workbook" );
   if (!stream || stream->fail() ) {
