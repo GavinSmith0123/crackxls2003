@@ -1,7 +1,7 @@
 CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native -Wall \
-       -I. @DEFS@ @ALGO_FILES@
+       -I. @DEFS@ @ALGO_FILES@ @LIBS@
 
-crackxls2003: pole.cpp extract.cpp config.h -lssl -lgmp -lstdc++
+crackxls2003: pole.cpp extract.cpp config.h -lstdc++
 
 clean:
 	rm crackxls2003 *.o

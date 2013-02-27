@@ -12,10 +12,19 @@ else
 	AC_DEFINE([USE_REGULAR], [1], [Choice of algorithm])
 fi
 
-dnl AC_CHECK_LIB(gomp, )
-dnl AC_C_BIGENDIAN
-dnl AC_OPENMP
-dnl check endianness, can we use x86 assembler, etc.
+AC_CHECK_LIB(ssl, MD5_Init, ,AC_MSG_ERROR([OpenSSL is required to build]))
+
+# Used for uint8_t etc.
+AC_PROG_CC_C99
+if test "x$ac_cv_prog_cc_c99" = xno; then
+	AC_MSG_ERROR([C99 is required to build])
+fi
+
+# Used to calculate key testing rate
+# libgmp symbols begin with __gmp
+AC_CHECK_LIB(gmp, __gmpz_add)
+
+AC_C_BIGENDIAN(AC_MSG_ERROR([A little-endian machine architecture is required]))
 
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)
