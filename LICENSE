@@ -1,11 +1,16 @@
-The files crackxls2003.c and extract.cpp are licensed under the GPL version 3 or later. For a definitive copyright notice and licence, see the individual files. The text of the GPL is contained in the LICENSE.GPL file included with this project.
+The files crackxls2003.c and extract.cpp are licensed under the GPL version 3
+or later. For a definitive copyright notice and licence, see the individual
+files. The text of the GPL is contained in the LICENSE.GPL file included
+with this project.
 
-Files from the POLE project (http://pole.berlos.de) are copyright 2002-2005 by Ariya Hidayat. See the headers of the files pole.h and pole.cpp for licensing information.
+Files from the POLE project (http://pole.berlos.de) are copyright 2002-2005
+by Ariya Hidayat. See the headers of the files pole.h and pole.cpp for
+licensing information.
 
-Files not derived from those already mentioned are copyright Gavin Smith and
-licensed under GNU General Public License as published by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+Files not derived from those already mentioned are copyright Gavin Smith
+and licensed under GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
 
 OpenSSL linking exception -
 
@@ -14,7 +19,9 @@ give permission to link the code of this program with the OpenSSL library
 and distribute linked combinations including the two. Other restrictions
 may apply, such as those due to the rights of other copyright holders.
 
-You must obey the GNU General Public License (or any other applicable licence for included code, such as the BSD-style licence of the files from the POLE project) for all of the code used other than OpenSSL.
+You must obey the GNU General Public License (or any other applicable licence
+for included code, such as the BSD-style licence of the files from the POLE
+project) for all of the code used other than OpenSSL.
 
 This exception does not reduce the rights already granted to you by the
 GNU General Public License: in particular, you may extend this exception
