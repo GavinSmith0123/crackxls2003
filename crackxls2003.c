@@ -256,10 +256,13 @@ void load_data_from_file (const char *file_name)
 
 }
 
+extern void decrypt_file (char *infile, char *outfile, uint8_t *key);
+
 /* Use getopt() to parse command line */
 void parse_cmd(int argc, char **argv)
 {
 	int c;
+	int decrypt_flag = 0;
 
 	memset(real_key, 0, 64);
 
@@ -268,11 +271,12 @@ void parse_cmd(int argc, char **argv)
 		{
 		 {"start", required_argument, 0, 's'},
 		 {"test-speed", no_argument, 0, 't'},
+		 {"decrypt", required_argument, 0, 'd'},
 		 {0, 0, 0, 0}
 		};
 		int option_idx = 0;
 
-		c = getopt_long (argc, argv, "s:t", options, &option_idx);
+		c = getopt_long (argc, argv, "s:td:", options, &option_idx);
 
 		if (c == -1) break; /* End of options */
 		
@@ -299,6 +303,25 @@ void parse_cmd(int argc, char **argv)
 			printf("Speed testing enabled.\n");
 			flag_test_speed = 1;
 			break;
+		case 'd': /* '--decrypt' */
+			{
+			uint8_t *real_key8  = (uint8_t *) real_key;
+			decrypt_flag = 1;
+			int n;
+
+			n = sscanf (optarg, "%hhx %hhx %hhx %hhx %hhx",
+				&real_key8[0], 
+				&real_key8[1], 
+				&real_key8[2], 
+				&real_key8[3], 
+				&real_key8[4]);
+			if (n != 5) {
+				fprintf(stderr,
+					"Could not parse decryption key\n");
+				exit(1);
+			}
+			break;
+			}
 		case '?':
 			exit (1);
 			break;
@@ -310,6 +333,20 @@ void parse_cmd(int argc, char **argv)
 		exit (1);
 	}
 	file_name = argv[optind];
+
+	if (decrypt_flag) {
+		if (optind + 2 != argc) {
+			fprintf(stderr, "An input and output filename "
+				       "should be provided\n");
+			exit (1);
+		}
+
+		char *output_file = argv[optind + 1];
+		printf ("Input %s\nOutput %s\n", file_name, output_file);
+		decrypt_file(file_name, output_file, (uint8_t *) real_key);
+		exit (0);
+	}
+
 	load_data_from_file (file_name);
 	printf("Data successfully loaded from %s\n", file_name);
 
