@@ -22,7 +22,9 @@
 #include <getopt.h>
 
 #include <time.h>
+#ifdef HAVE_LIBGMP
 #include <gmp.h>
+#endif
 #include <signal.h>
 
 #ifdef USE_SOLAR
@@ -56,6 +58,7 @@ void print_hex (uint8_t *array, int n);
 
 void cracking_stats (void)
 {
+#ifdef HAVE_LIBGMP
 	mpz_t n_keys;
 	mpf_t n_keys_f;
 	char *n_keys_str;
@@ -97,6 +100,7 @@ void cracking_stats (void)
 
 	keys_per_second = mpf_get_d (n_keys_f);
 	printf("Number of keys tested / second: %f\n", keys_per_second);
+#endif /* HAVE_LIBGMP */
 }
 	
 
