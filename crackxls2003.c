@@ -243,7 +243,7 @@ extern void extract (const char *file_name, unsigned char *FilePass);
 
 void load_data_from_file (const char *file_name)
 {
-	char FilePass[54];
+	unsigned char FilePass[54];
 	extract (file_name, FilePass);
 	
 	/* print_hex(FilePass, 55); */
@@ -256,7 +256,8 @@ void load_data_from_file (const char *file_name)
 
 }
 
-extern void decrypt_file (char *infile, char *outfile, uint8_t *key);
+extern void decrypt_file (const char *infile, const char *outfile,
+		uint8_t *key);
 
 /* Use getopt() to parse command line */
 void parse_cmd(int argc, char **argv)

@@ -1,4 +1,3 @@
-/* test decrypting monkey.xls */
 #include <gsf/gsf-utils.h>
 
 #include <gsf/gsf-input-stdio.h>
@@ -12,6 +11,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <openssl/rc4.h>
 #include <openssl/md5.h>
@@ -68,14 +68,14 @@ void dump_decrypt (int n, int suppress_decryption)
 	decrypted_bytes = alloca(n);
 
 	if (NULL == (data = gsf_input_read (input_stream, n, NULL))) {
-		g_warning ("error reading ?");
+		fprintf(stderr, "Error reading input file");
 		exit(1);
 	}
 	
 	RC4 (&rc4_state, n, data, decrypted_bytes);
 
-	/* We still need to advance the RC4 keystream by the size of the record,
-	 * but the original bytes are output */
+	/* We still need to advance the RC4 keystream by the size of the
+	 * record, but the original bytes are output */
 	if (suppress_decryption) {
 		put (data, n);
 		return;
@@ -90,11 +90,10 @@ void decrypt_record (void)
 	guint8 id_and_size[4];
 	int suppress_decryption = 0;
 
-	char dummy[4] = {'a', 'a', 'a', 'a'};
+	unsigned char dummy[4] = {'a', 'a', 'a', 'a'};
 
-        gsf_input_read (input_stream, 4, id_and_size);
-	if (id_and_size == 0) {
-		g_warning ("error reading ?");
+        if (0 == gsf_input_read (input_stream, 4, id_and_size)) {
+		fprintf(stderr, "Error reading input file");
 		exit(1);
 	}
 
@@ -102,7 +101,7 @@ void decrypt_record (void)
 	size = id_and_size[2] + (id_and_size[3] << 8);
 	
 	/* Skip 4 bytes in RC4 key stream */
-	RC4 (&rc4_state, 4, "aaaa", dummy);
+	RC4 (&rc4_state, 4, (unsigned char *) "aaaa", dummy);
 
 	block_pos += 4;
 	if (block_pos >= 1024) {
@@ -157,23 +156,18 @@ void decrypt_record (void)
 /* decryption of stream */
 void decrypt (int index)
 {
-	int i;
-
 	input_stream = gsf_infile_child_by_index (infile, index);
 	if (gsf_input_size (input_stream) > 0) {
-		guint8 const *data;
-		size_t len;
-
 		output_stream = gsf_outfile_new_child (
 				outfile,
 				gsf_infile_name_by_index(infile, index),
 				FALSE);
+
 		block_number = 0;
 		block_pos = 0;
-
 		calculate_rc4_key ();
 
-		while ((len = gsf_input_remaining (input_stream)) > 0) {
+		while (gsf_input_remaining (input_stream) > 0) {
 			decrypt_record();
 		}
 		gsf_output_close(output_stream);
@@ -184,8 +178,6 @@ void decrypt (int index)
 
 void copy (int index)
 {
-	int i;
-
 	input_stream = gsf_infile_child_by_index (infile, index);
 	if (gsf_input_size (input_stream) > 0) {
 		guint8 const *data;
@@ -199,8 +191,9 @@ void copy (int index)
 		while ((len = gsf_input_remaining (input_stream)) > 0) {
 			if (len > 1024)
 				len = 1024;
-			if (NULL == (data = gsf_input_read (input_stream, len, NULL))) {
-				g_warning ("error reading ?");
+			if (NULL == (data =
+			    gsf_input_read (input_stream, len, NULL))) {
+				fprintf(stderr, "Error reading input file");
 				return;
 			}
 			put (data, len);
@@ -212,7 +205,8 @@ void copy (int index)
 	g_object_unref (G_OBJECT (input_stream));
 }
 
-void decrypt_file (char *infile_name, char *outfile_name, uint8_t *key)
+void decrypt_file (const char *infile_name, const char *outfile_name,
+                   uint8_t *key)
 {
 	int i;
 	GsfInput *input;
@@ -226,7 +220,7 @@ void decrypt_file (char *infile_name, char *outfile_name, uint8_t *key)
 	infile = gsf_infile_msole_new (input, &err);
 	g_object_unref (G_OBJECT (input));
 
-	/* Load "monkey-decrypt.xls" for writing */
+	/* Load output file for writing */
 	output = gsf_output_stdio_new (outfile_name, &err);
 	outfile = gsf_outfile_msole_new (output);
 	g_object_unref (G_OBJECT (output));
@@ -237,7 +231,8 @@ void decrypt_file (char *infile_name, char *outfile_name, uint8_t *key)
 	}
 
 	for (i = 0 ; i < gsf_infile_num_children (infile) ; i++) {
-		if (0 == strcmp ("Workbook", gsf_infile_name_by_index(infile, i))) {
+		if (0 == strcmp ("Workbook",
+		                 gsf_infile_name_by_index(infile, i))) {
 			decrypt (i);
 		} else {
 			copy (i);

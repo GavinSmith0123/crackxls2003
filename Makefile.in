@@ -1,4 +1,4 @@
-CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native -Wall \
+CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native \
        -I. @DEFS@ @ALGO_FILES@ @LIBS@
 
 crackxls2003: pole.o extract.cpp config.h -lstdc++
