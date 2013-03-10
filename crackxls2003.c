@@ -27,11 +27,7 @@
 #endif
 #include <signal.h>
 
-#ifdef USE_SOLAR
 #include "solar-md5/md5.h"
-#else
-#include <openssl/md5.h>
-#endif
 #include <openssl/rc4.h>
 
 const char *file_name;
@@ -111,12 +107,6 @@ void test_pass (void)
 
 	/* Compute md5 */
 
-#ifdef USE_REGULAR
-	MD5_Init(&md5_ctx);
-	MD5_Update(&md5_ctx, real_key, 9);
-	MD5_Final((unsigned char *) md5, &md5_ctx);
-#endif
-
 #ifdef USE_ASM
 	/* places result in "md5" */
 	extern void md5_compress(uint32_t *state, uint32_t *block);
@@ -128,7 +118,8 @@ void test_pass (void)
 
 	md5_compress(md5, real_key);
 #endif
-#ifdef USE_SOLAR
+
+#ifdef USE_REGULAR
 	md5_ctx.a = 0x67452301;
 	md5_ctx.b = 0xefcdab89;
 	md5_ctx.c = 0x98badcfe;
@@ -158,7 +149,7 @@ void test_pass (void)
 
 	md5_compress(md5, (uint32_t *) (hash_and_verifier + 16));
 #endif
-#ifdef USE_SOLAR
+#ifdef USE_REGULAR
 	md5_ctx.a = 0x67452301;
 	md5_ctx.b = 0xefcdab89;
 	md5_ctx.c = 0x98badcfe;
@@ -169,11 +160,6 @@ void test_pass (void)
 	md5[1] = md5_ctx.b; 
 	md5[2] = md5_ctx.c; 
 	md5[3] = md5_ctx.d; 
-#endif
-#ifdef USE_REGULAR	
-	MD5_Init(&md5_ctx);
-	MD5_Update(&md5_ctx, hash_and_verifier + 16, 16);
-	MD5_Final((unsigned char *)md5, &md5_ctx);
 #endif
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {

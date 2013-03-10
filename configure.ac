@@ -5,14 +5,12 @@ m4_include(aclocal.m4)
 
 AC_ARG_WITH([algo], [--with-algo - Choice of algorithm])
 
-if test "x$with_algo" = xsolar; then
-	AC_DEFINE([USE_SOLAR], [1], [Choice of algorithm])
-	AC_SUBST([ALGO_FILES], [solar-md5/md5.c])
-elif test "x$with_algo" = xasm; then
+if test "x$with_algo" = xasm; then
 	AC_DEFINE([USE_ASM], [1], [Choice of algorithm])
 	AC_SUBST([ALGO_FILES], [asm-md5/md5-fast.S])
 else
 	AC_DEFINE([USE_REGULAR], [1], [Choice of algorithm])
+	AC_SUBST([ALGO_FILES], [solar-md5/md5.c])
 fi
 
 AC_CHECK_LIB(ssl, MD5_Init, ,AC_MSG_ERROR([OpenSSL is required to build]))
