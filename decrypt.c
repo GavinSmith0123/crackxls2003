@@ -43,6 +43,9 @@ void put (const guint8 *data, size_t n)
 /* See http://msdn.microsoft.com/en-us/library/dd920360(v=office.12).aspx */
 void calculate_rc4_key (void)
 {
+	int i;
+	char dummy;
+
 	memcpy(real_key + 5, &block_number, 4);
 #if 0
 	the above would be done in an endian-neutral way as follows
@@ -56,6 +59,13 @@ void calculate_rc4_key (void)
 	MD5_Final((unsigned char *) rc4_key, &md5_ctx);
 
 	RC4_set_key (&rc4_state, 16, rc4_key);
+
+	/* Key stream must be advanced if we are not starting at
+	 * the beginning of a block */
+
+	for (i = 0; i < block_pos; i++) {
+		RC4 (&rc4_state, 1, "a", &dummy);
+	}
 }
 
 /* Read n bytes from input stream and decrypt them */
