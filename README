@@ -15,14 +15,20 @@ where you left off by using the "--start" or "-s" option, whose argument
 is 5 hexadecimal bytes separated by spaces, and specifies a key to start
 searching from. Example:
 
-$ ./crackxls2003 -s "00 00 00 00 00" [filename.xls]
+$ ./crackxls2003 -s "00 00 00 00 00" file.xls
 
-The program will display a working key if it finds one. Note the program
-does not decrypt the file - another program must be used for this.
+The program will display a working key if it finds one.
+
+Once a working key is found, crackxls2003 may be used to decrypt the file
+using the "--decrypt" or "-d" option, followed by the name of the file to
+be decrypted, and the name of the unencrypted file to be created. Example:
+
+$ ./crackxls2003 -d "1d da 30 05 8f" file.xls file-out.xls
 
 The "--test-speed" or "-t" option calculates the number of keys which are
 tested per second.
 
-See the INSTALL file for information on compiling, and LICENSE for copyright and licensing information.
+See the INSTALL file for information on compiling, and LICENSE for copyright
+and licensing information.
 
 Send comments and bug reports to GavinSmith0123@gmail.com.
