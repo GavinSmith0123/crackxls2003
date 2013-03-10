@@ -14,7 +14,8 @@
 #include <stdlib.h>
 
 #include <openssl/rc4.h>
-#include <openssl/md5.h>
+#include "solar-md5/md5.h"
+// #include <openssl/md5.h>
 
 GsfInfile *infile;
 GsfOutfile *outfile;
@@ -157,6 +158,7 @@ void decrypt_record (void)
 void decrypt (int index)
 {
 	input_stream = gsf_infile_child_by_index (infile, index);
+
 	if (gsf_input_size (input_stream) > 0) {
 		output_stream = gsf_outfile_new_child (
 				outfile,
