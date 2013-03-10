@@ -15,7 +15,6 @@
 
 #include <openssl/rc4.h>
 #include "solar-md5/md5.h"
-// #include <openssl/md5.h>
 
 GsfInfile *infile;
 GsfOutfile *outfile;
@@ -101,6 +100,12 @@ void decrypt_record (void)
 	id = id_and_size[0] + (id_and_size[1] << 8);
 	size = id_and_size[2] + (id_and_size[3] << 8);
 	
+	/* FilePass - record will be ignored if id = 0 */
+	if (id == 47) {
+		id_and_size[0] = id_and_size[1] = 0; /* ignore record */
+	}
+	put (id_and_size, 4);
+	
 	/* Skip 4 bytes in RC4 key stream */
 	RC4 (&rc4_state, 4, (unsigned char *) "aaaa", dummy);
 
@@ -117,7 +122,6 @@ void decrypt_record (void)
 	/* These records are not encrypted */
 	switch (id) {
 	case 47: /* FilePass */
-		id_and_size[0] = id_and_size[1] = 0; /* ignore record */
 	case 2057: /* BOF */
 	case 404: /* UsrExcl */
 	case 405: /* FileLock */
@@ -127,10 +131,21 @@ void decrypt_record (void)
 		suppress_decryption = 1;
 		break;
 	case 133: /* BoundSheet8 */
+		/* First four bytes ("IbPlyPos") are not encrypted */
+		/* Second arg means not to decrypt */
+		dump_decrypt(4, 1);
+
+		block_pos += 4;
+		if (block_pos >= 1024) {
+			block_pos -= 1024;
+			block_number++;
+			calculate_rc4_key ();
+		}
+		
+		/* Process rest of record using code below */
+		size -= 4;
 		break;
-		/* Requires special attention - not implemented yet */
 	}
-	put (id_and_size, 4);
 	
 	/* Record body split across several blocks */
 	if (size + block_pos >= 1024) {
