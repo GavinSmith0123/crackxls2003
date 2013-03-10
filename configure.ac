@@ -1,5 +1,8 @@
 AC_INIT(crackxls2003, 0)
 
+dnl Get definition of pkg-config macros
+m4_include(aclocal.m4)
+
 AC_ARG_WITH([algo], [--with-algo - Choice of algorithm])
 
 if test "x$with_algo" = xsolar; then
@@ -23,6 +26,10 @@ fi
 # Used to calculate key testing rate
 # libgmp symbols begin with __gmp
 AC_CHECK_LIB(gmp, __gmpz_add)
+
+# Check for libgsf
+AC_CHECK_LIB(gsf-1, gsf_input_size)
+PKG_CHECK_MODULES(LIBGSF, [libgsf-1 >= 0])
 
 AC_C_BIGENDIAN(AC_MSG_ERROR([A little-endian machine architecture is required]))
 

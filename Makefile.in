@@ -1,6 +1,6 @@
 CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native \
-       -I. @DEFS@ @ALGO_FILES@ @LIBS@ `pkg-config --cflags libgsf-1`
-LDFLAGS= `pkg-config --libs libgsf-1`
+       -I. @DEFS@ @ALGO_FILES@ @LIBGSF_CFLAGS@
+LDFLAGS=@LIBGSF_LIBS@ @LIBS@ 
 
 crackxls2003: pole.o extract.cpp decrypt.o config.h -lstdc++
 
