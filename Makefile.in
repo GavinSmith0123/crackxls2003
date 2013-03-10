@@ -1,8 +1,11 @@
-CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native \
-       -I. @DEFS@ @ALGO_FILES@ @LIBGSF_CFLAGS@
+#CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native \
+#	-I. @DEFS@ @LIBGSF_CFLAGS@
+
+CFLAGS=-g -march=native -mtune=native -I. @DEFS@ @LIBGSF_CFLAGS@
+
 LDFLAGS=@LIBGSF_LIBS@ @LIBS@ 
 
-crackxls2003: pole.o extract.cpp decrypt.o config.h -lstdc++
+crackxls2003: pole.o extract.cpp decrypt.o config.h -lstdc++ @ALGO_FILES@ 
 
 clean:
 	rm crackxls2003 *.o
