@@ -31,6 +31,8 @@ PKG_CHECK_MODULES(LIBGSF, [libgsf-1 >= 0])
 
 AC_C_BIGENDIAN(AC_MSG_ERROR([A little-endian machine architecture is required]))
 
+AC_CHECK_HEADERS([signal.h])
+
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT 

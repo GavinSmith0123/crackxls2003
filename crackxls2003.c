@@ -25,7 +25,10 @@
 #ifdef HAVE_LIBGMP
 #include <gmp.h>
 #endif
+
+#ifdef HAVE_SIGNAL_H
 #include <signal.h>
+#endif
 
 #include "solar-md5/md5.h"
 #include <openssl/rc4.h>
@@ -354,7 +357,9 @@ void catch_signal (int sig)
 
 main (int argc, char **argv)
 {
+#ifdef HAVE_SIGNAL_H
 	signal(SIGINT, catch_signal);
+#endif
 	parse_cmd (argc, argv);
 	crack_pass ();
 }
