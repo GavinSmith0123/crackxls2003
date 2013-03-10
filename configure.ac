@@ -28,7 +28,7 @@ fi
 AC_CHECK_LIB(gmp, __gmpz_add)
 
 # Check for libgsf
-AC_CHECK_LIB(gsf-1, gsf_input_size)
+dnl Sets LIBGSF_CFLAGS and LIBGSF_LIBS appropriately
 PKG_CHECK_MODULES(LIBGSF, [libgsf-1 >= 0])
 
 AC_C_BIGENDIAN(AC_MSG_ERROR([A little-endian machine architecture is required]))
