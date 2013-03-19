@@ -1,11 +1,24 @@
-CFLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native \
-	-I. @DEFS@ @LIBGSF_CFLAGS@
+# Set by configure script, e.g. for cross-compiling
+CC=@CC@ 
+CXX=@CXX@
+CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
+LDFLAGS=@LDFLAGS@
 
-# CFLAGS=-g -march=native -mtune=native -I. @DEFS@ @LIBGSF_CFLAGS@
+OPTIM_FLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native     
+CFLAGS += $(OPTIM_FLAGS)
+CFLAGS += -I. @DEFS@ @LIBGSF_CFLAGS@
+CXXFLAGS += $(OPTIM_FLAGS)
+CXXFLAGS += -I. @DEFS@
 
-LDLIBS=@LIBGSF_LIBS@ @LIBS@ -g
+LDLIBS=@LIBGSF_LIBS@ @LIBS@
 
-crackxls2003: pole.o extract.cpp decrypt.o config.h -lstdc++ @ALGO_FILES@ 
+OBJS=crackxls2003.o pole.o extract.o decrypt.o @OPT_OBJS@
+
+# Need to use g++ for linking if want to use -static-libgcc -static-libstdc++
+# (See http://www.cygwin.com/ml/cygwin/2012-06/msg00304.html)
+crackxls2003: $(OBJS)
+	$(CXX) -o crackxls2003 $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS)
 
 clean:
 	rm crackxls2003 *.o

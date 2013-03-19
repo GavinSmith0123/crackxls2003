@@ -3,14 +3,18 @@ AC_INIT(crackxls2003, 0)
 dnl Get definition of pkg-config macros
 m4_include(aclocal.m4)
 
+# Define CC and CXX
+AC_PROG_CC
+AC_PROG_CXX
+
 AC_ARG_WITH([algo], [--with-algo - Choice of algorithm])
 
 if test "x$with_algo" = xasm; then
 	AC_DEFINE([USE_ASM], [1], [Choice of algorithm])
-	AC_SUBST([ALGO_FILES], [asm-md5/md5-fast.S])
+	AC_SUBST([OPT_OBJS], [asm-md5/md5-fast.o])
 else
 	AC_DEFINE([USE_REGULAR], [1], [Choice of algorithm])
-	AC_SUBST([ALGO_FILES], [solar-md5/md5.c])
+	AC_SUBST([OPT_OBJS], [solar-md5/md5.o])
 fi
 
 AC_CHECK_LIB(ssl, MD5_Init, ,AC_MSG_ERROR([OpenSSL is required to build]))
