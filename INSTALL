@@ -1,4 +1,4 @@
-This program depends on the OpenSSL library (http://www.openssl.org/).
+This program depends on the OpenSSL library (http://www.openssl.org/). libgsf is also required if support for decrypting is enabled.
 
 Unix or GNU/Linux
 =================
@@ -20,7 +20,116 @@ necessary files are included with the distributed crackxls2003 source.
 Windows
 =======
 
-crackxls2003 compiles under Cygwin. For a standalone executable which doesn't
-depend on the Cygwin runtime you will have to install the OpenSSL library and
-not use the Cygwin version. For convenience, a (not-necessarily up-to-date)
-Windows executable is included with the source.
+crackxls2003 has been successfully compiled under Cygwin.
+
+For convenience, a (not-necessarily up-to-date) Windows version is included
+with the crackxls2003 source. As of this writing, it does not include
+support for decrypting.
+
+To compile a Windows version which does not depend on the Cygwin runtime,
+you have several options:
+
+* Use the MinGW cross-compiler. Install the i686-w64-mingw32 packages
+from the Cygwin installer. (Or an appropriate package for your processor
+type. The packages are confusingly named: the i686-w64-mingw32 packages
+are for a 32-bit version of Windows.) This has been tested with linking
+against dynamic libraries.
+
+* Use the -mno-cygwin option to the Cygwin gcc. This option is deprecated
+and has been removed in gcc version 4.
+
+* Use the MinGW native compiler. This has not been tested but is expected
+to work.
+
+You will also need Windows versions of all of the dependencies. Acquiring
+these can be a time-consuming and error-prone task. Also note that unless
+you succeed in compiling static versions of the libraries, the compiled
+executable will need their DLL's to run.
+
+You will find "cygcheck", part of Cygwin, useful for checking DLL
+dependencies. Specify the library search path with
+
+$ PATH=/mingw/bin:$PATH cygcheck ...
+
+"ldd" can be used for the same thing.
+
+Once you succeed in building crackxls2003.exe, if it depends on DLL's under
+/mingw/bin, you will have to set the search path as above.
+
+If running under cmd.exe in Windows, the same is done with
+
+C:\> PATH=C:\cygwin\mingw\bin;%PATH%
+C:\> crackxls2003.exe
+
+Some notes on installing dependencies follow.
+
+All libraries will be installed under the /mingw directory in the Cygwin filesystem.
+
+OpenSSL
+-------
+
+Configure with
+
+$ ./Configure mingw --prefix=/mingw
+
+libgsf
+------
+
+You should use a version greater than 1.14.11
+otherwise there are various problems with zlib. (See
+https://mail.gnome.org/archives/ftp-release-list/2009-January/msg00045.html)
+
+Install the Cygwin intltool package.
+
+You also need libxml2 and glib (see below).
+
+Once all dependencies are installed, configure with
+
+$ ./configure --prefix=/mingw \
+  --build=i686-pc-cygwin --host=i686-w64-mingw32 \
+ CFLAGS=-I/mingw/include CPPFLAGS=-I/mingw/include \
+ CXXFLAGS=-I/mingw/include LDFLAGS=-L/mingw/lib \
+ PKG_CONFIG_PATH=/mingw/lib/pkgconfig \
+ --with-gnome-vfs=no --without-bonobo \
+ --enable-shared --enable-static
+
+The "--with" options are to disable using dependencies we don't need and
+to prevent us accidentally using any native Cygwin libraries.
+
+glib
+----
+
+You may download glib and any related libraries from
+http://www.gtk.org/download/win32.php. Download the all-in-one bundle and
+extract under /mingw.
+
+The included pkg-config files will have the wrong prefix. Fix this with:
+
+$ find /mingw -name "*.pc" | xargs sed -i 's,^prefix=.*$,prefix=/mingw,'
+
+zlib
+----
+
+Use the i686-w64-mingw32 zlib Cygwin package.
+
+libxml2
+-------
+
+Install libiconv first (see below).
+
+You will probably have to compile libxml2 from source. There is an MSYS
+package, but it doesn't seem to contain all the symbols we need. There is
+a download for Windows run-time from the libxml2 website, but it does not
+include development headers.
+
+Configuration is as with libgsf, except you should specify the
+--without-python option instead (otherwise you pick up the Cygwin Python
+headers and fail horribly).
+
+libiconv
+--------
+
+Download and extract both run-time and development files from
+http://sourceforge.net/projects/mingw/files/MinGW/Base/libiconv/libiconv-1.14-2/
+
+
