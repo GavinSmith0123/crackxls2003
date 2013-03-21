@@ -17,7 +17,7 @@ else
 	AC_SUBST([OPT_OBJS], [solar-md5/md5.o])
 fi
 
-AC_CHECK_LIB(ssl, MD5_Init, ,AC_MSG_ERROR([OpenSSL is required to build]))
+AC_CHECK_LIB(crypto, MD5_Init, ,AC_MSG_ERROR([OpenSSL is required to build]))
 
 # Used for uint8_t etc.
 AC_PROG_CC_C99
