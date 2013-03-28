@@ -1,4 +1,5 @@
-This program depends on the OpenSSL library (http://www.openssl.org/). libgsf is also required if support for decrypting is enabled.
+This program depends on the OpenSSL library (http://www.openssl.org/). libgsf
+is also required if support for decrypting is enabled.
 
 Unix or GNU/Linux
 =================
@@ -20,11 +21,11 @@ necessary files are included with the distributed crackxls2003 source.
 Windows
 =======
 
-crackxls2003 has been successfully compiled under Cygwin.
+crackxls2003 has been successfully compiled under Cygwin and using a
+MinGW-targeted cross-compiler.
 
 For convenience, a (not-necessarily up-to-date) Windows version is included
-with the crackxls2003 source. As of this writing, it does not include
-support for decrypting.
+with the crackxls2003 source.
 
 To compile a Windows version which does not depend on the Cygwin runtime,
 you have several options:
@@ -32,8 +33,7 @@ you have several options:
 * Use the MinGW cross-compiler. Install the i686-w64-mingw32 packages
 from the Cygwin installer. (Or an appropriate package for your processor
 type. The packages are confusingly named: the i686-w64-mingw32 packages
-are for a 32-bit version of Windows.) This has been tested with linking
-against dynamic libraries.
+are for a 32-bit version of Windows.)
 
 * Use the -mno-cygwin option to the Cygwin gcc. This option is deprecated
 and has been removed in gcc version 4.
@@ -61,9 +61,10 @@ If running under cmd.exe in Windows, the same is done with
 C:\> PATH=C:\cygwin\mingw\bin;%PATH%
 C:\> crackxls2003.exe
 
-Some notes on installing dependencies follow.
+Some notes on installing dependencies under Cygwin follow.
 
-All libraries will be installed under the /mingw directory in the Cygwin filesystem.
+All libraries will be installed under the /mingw directory in the Cygwin
+filesystem.
 
 OpenSSL
 -------
@@ -96,6 +97,14 @@ $ ./configure --prefix=/mingw \
 The "--with" options are to disable using dependencies we don't need and
 to prevent us accidentally using any native Cygwin libraries.
 
+If you have glib installed under /usr/i686-w64-mingw32, you should set
+
+R=/usr/i686-pc-cygwin/sys-root/mingw and use
+
+PKG_CONFIG_PATH=$R/lib/pkgconfig:/mingw/lib/pkgconfig 
+
+instead.
+
 glib
 ----
 
@@ -106,6 +115,45 @@ extract under /mingw.
 The included pkg-config files will have the wrong prefix. Fix this with:
 
 $ find /mingw -name "*.pc" | xargs sed -i 's,^prefix=.*$,prefix=/mingw,'
+
+If you wish to use a static version of glib, your best choice
+is to use the latest Fedora mingw32-glib2-static package.
+http://koji.fedoraproject.org/koji/buildinfo?buildID=405366
+
+I used mingw-glib2-2.35.9-1.fc19.src.rpm.
+
+To compile this from source, I had to
+* Install the Cygwin rpm and rpmbuild packages
+* Extract the source rpm with "rpm -i"
+* Attempt "rpmbuild -bp SPECS/mingw-glib2.spec --nodeps"
+* Add some extra lines to the .spec file, and run above command again
+* Run "./configure" and "make".
+
+I used the following configure flags: "--with-threads=win32
+--with-pcre=internal --disable-xattr --disable-selinux --disable-dtrace
+--disable-shared --enable-static --disable-silent-rules" as well as setting
+various environmental variables as above.
+
+libintl
+-------
+
+Part of gettext. You will need version 0.18.2.1 to compile a static
+version.
+(https://lists.gnu.org/archive/html/bug-gettext/2013-01/msg00011.html)
+
+Configure with:
+
+$ ./configure --prefix=/mingw --build=i686-pc-cygwin \
+ --host=i686-w64-mingw32 CFLAGS=-I/mingw/include \
+ CPPFLAGS=-I/mingw/include CXXFLAGS=-I/mingw/include LDFLAGS=-L/mingw/lib \
+ PKG_CONFIG_PATH=/mingw/lib/pkgconfig --disable-silent-rules \
+ --disable-dependency-tracking --disable-java --disable-shared --disable-c++ \
+ --disable-libasprintf --disable-acl --disable-openmp --disable-curses \
+ --without-git --without-bzip2 --without-xz
+
+There does not appear to be a simple way of only compiling libintl, so
+this could take a while. The libintl source I downloaded did not have a
+configure script.
 
 zlib
 ----
