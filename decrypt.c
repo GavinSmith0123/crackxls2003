@@ -103,13 +103,15 @@ void decrypt_record (void)
 	unsigned char dummy[4] = {'a', 'a', 'a', 'a'};
 
         if (0 == gsf_input_read (input_stream, 4, id_and_size)) {
-		fprintf(stderr, "Error reading input file");
+		fprintf(stderr, "Error reading record header\n");
 		exit(1);
 	}
 
 	id = id_and_size[0] + (id_and_size[1] << 8);
 	size = id_and_size[2] + (id_and_size[3] << 8);
 	
+	/* printf("id = %d, size = %d\n", id, size); */
+
 	/* FilePass - record will be ignored if id = 0 */
 	if (id == 47) {
 		id_and_size[0] = id_and_size[1] = 0; /* ignore record */
@@ -194,9 +196,13 @@ void decrypt (int index)
 		block_pos = 0;
 		calculate_rc4_key ();
 
-		while (gsf_input_remaining (input_stream) > 0) {
+		int n;
+
+		while (n = gsf_input_remaining (input_stream) > 0) {
+			/* printf("%d bytes left in stream\n", n); */
 			decrypt_record();
 		}
+		/* printf("%d bytes left in stream\n", n); */
 		gsf_output_close(output_stream);
 		g_object_unref (G_OBJECT (output_stream));
 	}
@@ -220,7 +226,7 @@ void copy (int index)
 				len = 1024;
 			if (NULL == (data =
 			    gsf_input_read (input_stream, len, NULL))) {
-				fprintf(stderr, "Error reading input file");
+				fprintf(stderr, "Error copying stream\n");
 				return;
 			}
 			put (data, len);
@@ -260,6 +266,7 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 	for (i = 0 ; i < gsf_infile_num_children (infile) ; i++) {
 		if (0 == strcmp ("Workbook",
 		                 gsf_infile_name_by_index(infile, i))) {
+			/* printf("Workbook stream found\n"); */
 			decrypt (i);
 		} else {
 			copy (i);
