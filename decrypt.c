@@ -16,6 +16,8 @@
 #include <openssl/rc4.h>
 #include "solar-md5/md5.h"
 
+#include <setjmp.h>
+
 GsfInfile *infile;
 GsfOutfile *outfile;
 GError    *err = NULL;
@@ -94,11 +96,15 @@ void dump_decrypt (int n, int suppress_decryption)
 	put (decrypted_bytes, n);
 }
 
+jmp_buf jmp_decryption_finished;
+
 void decrypt_record (void)
 {
 	int id, size;
 	guint8 id_and_size[4];
 	int suppress_decryption = 0;
+
+	static int was_at_eof = 0;
 
 	unsigned char dummy[4] = {'a', 'a', 'a', 'a'};
 
@@ -133,8 +139,10 @@ void decrypt_record (void)
 
 	/* These records are not encrypted */
 	switch (id) {
-	case 47: /* FilePass */
 	case 2057: /* BOF */
+		was_at_eof = 0; /* See below */
+		/* Fall through */
+	case 47: /* FilePass */
 	case 404: /* UsrExcl */
 	case 405: /* FileLock */
 	case 225: /* InterfaceHdr */
@@ -158,6 +166,24 @@ void decrypt_record (void)
 		size -= 4;
 		break;
 	}
+	
+	/* EOF */
+	/* Some files seem to have a lot of 00 bytes at the end of the
+	 * Workbook stream which should not be read. (Unless the number of
+	 * these bytes is a multiple of 4, it will break when we try to read
+	 * the ID and record size.) This may be caused by an incorrect stream
+	 * length. Hence, we should stop reading when we reach an EOF record
+	 * which is not followed by a BOF record. As long as the junk bytes
+	 * are only 00's and there are at least four of them, it will suffice
+	 * to check for a null record following an EOF record. */
+	if (id == 10) {
+		was_at_eof = 1;
+	}
+	if (id == 0 && was_at_eof) {
+		/* Return 1 from setjmp */
+		longjmp(jmp_decryption_finished, 1);
+	}
+
 	
 	/* Record body split across several blocks */
 	if (size + block_pos >= 1024) {
@@ -198,9 +224,13 @@ void decrypt (int index)
 
 		int n;
 
+		if (setjmp(jmp_decryption_finished) == 0) {
 		while (n = gsf_input_remaining (input_stream) > 0) {
 			/* printf("%d bytes left in stream\n", n); */
 			decrypt_record();
+		}
+		} else {
+			printf("Null bytes at end of stream\n");
 		}
 		/* printf("%d bytes left in stream\n", n); */
 		gsf_output_close(output_stream);
