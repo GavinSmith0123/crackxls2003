@@ -7,6 +7,7 @@ cd test-files
 ../crackxls2003 -t -s "00 00 00 9c de" ape\$dog.xls
 
 echo Testing decryption
-../crackxls2003 -d "1d da 30 05 8f" monkey.xls monkey-test.xls
-poledump monkey-test.xls
-cmp monkey-test.xls monkey-out.xls
+rm testout.xls
+../crackxls2003 -d  "9c a7 4a 7b 84" testdoc.xls testout.xls
+poledump testout.xls
+cmp testout.xls test-target.xls
