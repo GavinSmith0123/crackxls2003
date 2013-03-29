@@ -4,6 +4,9 @@ is also required if support for decrypting is enabled.
 Unix or GNU/Linux
 =================
 
+If you have downloaded a snapshot of the git repository, you should run
+autoconf to update the configure script.
+
 Run
 
 $ ./configure 
@@ -13,6 +16,9 @@ followed by
 $ make
 
 The "crackxls2003" executable will be created in the build directory.
+
+You can specify the --without-libgsf flag to configure if you do not want
+to use the libgsf library for decryption.
 
 A choice of implementation algorithms may be chosen using the --with-algo
 argument to configure. Most of these are experimental and not all the
