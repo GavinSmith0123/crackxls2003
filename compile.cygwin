@@ -1,9 +1,0 @@
-#!/bin/sh
-
-
-g++ -mno-cygwin -c extract.cpp
-g++ -mno-cygwin -c pole.cpp 
-gcc -mno-cygwin -I/usr/local/ssl/include -c crackxls2003.c -O5 -fomit-frame-pointer
-
-g++ -o crackxls2003 -mno-cygwin pole.o extract.o crackxls2003.o /usr/local/ssl/lib/*.a -O5 -fomit-frame-pointer -march=native -mtune=native
-
