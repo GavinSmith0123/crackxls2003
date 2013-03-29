@@ -5,15 +5,18 @@ CFLAGS=@CFLAGS@
 CXXFLAGS=@CXXFLAGS@
 LDFLAGS=@LDFLAGS@
 
+OPT_CFLAGS=@LIBGSF_CFLAGS@ @LIBXML2_CFLAGS@
+OPT_LIBS=@LIBGSF_LIBS@ @LIBXML2_LIBS@
+
 OPTIM_FLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native     
 CFLAGS += $(OPTIM_FLAGS)
-CFLAGS += -I. @DEFS@ @LIBGSF_CFLAGS@
+CFLAGS += -I. @DEFS@ $(OPT_CFLAGS)
 CXXFLAGS += $(OPTIM_FLAGS)
 CXXFLAGS += -I. @DEFS@
 
-LDLIBS=@LIBGSF_LIBS@ @LIBS@
+LDLIBS=$(OPT_LIBS) @LIBS@
 
-OBJS=crackxls2003.o pole.o extract.o decrypt.o @OPT_OBJS@
+OBJS=crackxls2003.o pole.o extract.o @OPT_OBJS@
 
 # Need to use g++ for linking if want to use -static-libgcc -static-libstdc++
 # (See http://www.cygwin.com/ml/cygwin/2012-06/msg00304.html)

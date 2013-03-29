@@ -6,11 +6,14 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `crypto' library (-lcrypto). */
+#undef HAVE_LIBCRYPTO
+
 /* Define to 1 if you have the `gmp' library (-lgmp). */
 #undef HAVE_LIBGMP
 
-/* Define to 1 if you have the `ssl' library (-lssl). */
-#undef HAVE_LIBSSL
+/* libgsf */
+#undef HAVE_LIBGSF
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

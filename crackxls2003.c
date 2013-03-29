@@ -245,9 +245,6 @@ void load_data_from_file (const char *file_name)
 
 }
 
-extern void decrypt_file (const char *infile, const char *outfile,
-		uint8_t *key);
-
 /* Use getopt() to parse command line */
 void parse_cmd(int argc, char **argv)
 {
@@ -325,6 +322,11 @@ void parse_cmd(int argc, char **argv)
 	file_name = argv[optind];
 
 	if (decrypt_flag) {
+#ifdef HAVE_LIBGSF
+		extern void decrypt_file
+			(const char *infile, const char *outfile,
+		         uint8_t *key);
+
 		if (optind + 2 != argc) {
 			fprintf(stderr, "An input and output filename "
 				       "should be provided\n");
@@ -334,6 +336,11 @@ void parse_cmd(int argc, char **argv)
 		char *output_file = argv[optind + 1];
 		printf ("Input %s\nOutput %s\n", file_name, output_file);
 		decrypt_file(file_name, output_file, (uint8_t *) real_key);
+#else
+		fprintf(stderr,
+			"Support for decryption was disabled at "
+			"compile time\n");
+#endif
 		exit (0);
 	}
 
