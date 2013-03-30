@@ -1,0 +1,4 @@
+Version 0.2 (30-Mar-2013)
+- Optional support for decrypting using the libgsf library
+
+Version 0.1 - Initial release (28-Feb-2013)
