@@ -114,6 +114,9 @@ void dump_decrypt (int n, int suppress_decryption)
 
 jmp_buf jmp_decryption_finished;
 
+
+/* Non-encrypted storages... */
+
 void decrypt_record (void)
 {
 	int id, size;
@@ -224,16 +227,9 @@ void decrypt_record (void)
 }
 
 /* decryption of stream */
-void decrypt (int index)
+void decrypt (void)
 {
-	input_stream = gsf_infile_child_by_index (infile, index);
-
 	if (gsf_input_size (input_stream) > 0) {
-		output_stream = gsf_outfile_new_child (
-				outfile,
-				gsf_infile_name_by_index(infile, index),
-				FALSE);
-
 		block_number = 0;
 		block_pos = 0;
 		calculate_rc4_key ();
@@ -255,17 +251,12 @@ void decrypt (int index)
 	g_object_unref (G_OBJECT (input_stream));
 }
 
-void copy (int index)
+/* Copy input_stream to output_stream */
+void copy (void)
 {
-	input_stream = gsf_infile_child_by_index (infile, index);
 	if (gsf_input_size (input_stream) > 0) {
 		guint8 const *data;
 		size_t len;
-
-		output_stream = gsf_outfile_new_child (
-				outfile,
-				gsf_infile_name_by_index(infile, index),
-			       	FALSE);
 
 		while ((len = gsf_input_remaining (input_stream)) > 0) {
 			if (len > 1024)
@@ -283,6 +274,47 @@ void copy (int index)
 	}
 	g_object_unref (G_OBJECT (input_stream));
 }
+
+#if 0
+
+/* Copy or decrypt a structured file or storage */
+void copy_or_decrypt_tree (int decryptp,
+		GsfInfile *infile, GsfOutfile *outfile)
+{
+	for (i = 0 ; i < gsf_infile_num_children (infile); i++) {
+		GsfInput *child_in = gsf_infile_child_by_index (infile, i);
+		GsfOutput *child_out;
+
+		gboolean is_dir;
+
+		/* Check if child is another storage */
+		is_dir = (GSF_IS_INFILE (child_stream) &&
+			gsf_infile_num_children (GSF_INFILE(child)) >= 0);
+
+		child_out = gsf_outfile_new_child (
+			outfile,
+			gsf_infile_name_by_index (infile, i),
+			is_dir);
+
+		if (! is_dir) {
+			input_stream = child_in;
+			output_stream = child_out;
+			if (! decryptp) {
+				copy ();
+			} else {
+				decrypt();
+			}
+		} else {
+			/* Recursively process subdirectory */
+			copy_or_decrypt_tree (
+				decryptp,
+				GSF_INFILE (child_in),
+				GSF_OUTFILE (child_out));
+		}
+	}
+}
+
+#endif
 
 void decrypt_file (const char *infile_name, const char *outfile_name,
                    uint8_t *key)
@@ -310,12 +342,27 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 	}
 
 	for (i = 0 ; i < gsf_infile_num_children (infile) ; i++) {
-		if (0 == strcmp ("Workbook",
-		                 gsf_infile_name_by_index(infile, i))) {
+		char *stream_name = gsf_infile_name_by_index(infile, i);
+
+		input_stream = gsf_infile_child_by_index (infile, i);
+		output_stream = gsf_outfile_new_child (
+			outfile,
+			gsf_infile_name_by_index(infile, i),
+			FALSE);
+
+		if (0 == strcmp (stream_name, "Workbook")) {
 			/* printf("Workbook stream found\n"); */
-			decrypt (i);
+			decrypt ();
+		} else if (0 == strcmp (stream_name, "Revision Log")) {
+			/* printf("Revision Log stream found\n"); */
+			decrypt ();
+		} else if (0 == strcmp (stream_name, "_SX_DB_CUR")) {
+			/* Pivot Cache storage */
+ /* See http://msdn.microsoft.com/en-us/library/dd910065(v=office.12).aspx */ 
+			/* printf("Pivot Cache storage found\n"); */
+			decrypt ();
 		} else {
-			copy (i);
+			copy ();
 		}
 
 	}
