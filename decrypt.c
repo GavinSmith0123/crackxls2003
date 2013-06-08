@@ -34,8 +34,6 @@
 
 #include <setjmp.h>
 
-GsfInfile *infile;
-GsfOutfile *outfile;
 GError    *err = NULL;
 
 GsfInput *input_stream;
@@ -316,8 +314,9 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 {
 	int i;
 	GsfInput *input;
-
 	GsfOutput *output;
+	GsfInfile *infile;
+	GsfOutfile *outfile;
 
 	gsf_init ();
 
