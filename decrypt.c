@@ -114,9 +114,6 @@ void dump_decrypt (int n, int suppress_decryption)
 
 jmp_buf jmp_decryption_finished;
 
-
-/* Non-encrypted storages... */
-
 void decrypt_record (void)
 {
 	int id, size;
@@ -226,7 +223,7 @@ void decrypt_record (void)
 	block_pos += size;
 }
 
-/* decryption of stream */
+/* Decrypt input_stream to output_stream */
 void decrypt (void)
 {
 	if (gsf_input_size (input_stream) > 0) {
@@ -275,12 +272,11 @@ void copy (void)
 	g_object_unref (G_OBJECT (input_stream));
 }
 
-#if 0
-
 /* Copy or decrypt a structured file or storage */
 void copy_or_decrypt_tree (int decryptp,
 		GsfInfile *infile, GsfOutfile *outfile)
 {
+        int i;
 	for (i = 0 ; i < gsf_infile_num_children (infile); i++) {
 		GsfInput *child_in = gsf_infile_child_by_index (infile, i);
 		GsfOutput *child_out;
@@ -288,8 +284,8 @@ void copy_or_decrypt_tree (int decryptp,
 		gboolean is_dir;
 
 		/* Check if child is another storage */
-		is_dir = (GSF_IS_INFILE (child_stream) &&
-			gsf_infile_num_children (GSF_INFILE(child)) >= 0);
+		is_dir = (GSF_IS_INFILE (child_in) &&
+			gsf_infile_num_children (GSF_INFILE(child_in)) >= 0);
 
 		child_out = gsf_outfile_new_child (
 			outfile,
@@ -297,6 +293,7 @@ void copy_or_decrypt_tree (int decryptp,
 			is_dir);
 
 		if (! is_dir) {
+                        /* Child is a stream */
 			input_stream = child_in;
 			output_stream = child_out;
 			if (! decryptp) {
@@ -305,7 +302,7 @@ void copy_or_decrypt_tree (int decryptp,
 				decrypt();
 			}
 		} else {
-			/* Recursively process subdirectory */
+			/* Child is a storage, so recursively process */
 			copy_or_decrypt_tree (
 				decryptp,
 				GSF_INFILE (child_in),
@@ -313,8 +310,6 @@ void copy_or_decrypt_tree (int decryptp,
 		}
 	}
 }
-
-#endif
 
 void decrypt_file (const char *infile_name, const char *outfile_name,
                    uint8_t *key)
@@ -342,29 +337,55 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 	}
 
 	for (i = 0 ; i < gsf_infile_num_children (infile) ; i++) {
-		char *stream_name = gsf_infile_name_by_index(infile, i);
+		const char *child_name = gsf_infile_name_by_index(infile, i);
 
+		gboolean is_dir;
+
+		/* Check if child is a storage (storages in OLE compound
+                 * files are like subdirectories) */
+		is_dir = (GSF_IS_INFILE (input_stream) &&
+			gsf_infile_num_children (GSF_INFILE(input_stream))
+			>= 0);
+
+		/* Global variables used by copy() or decrypt() functions
+		 * We may also pass the values to copy_or_decrypt_tree(),
+		 * which will end up redefining the global variables when
+		 * it calls copy() or decrypt() itself */
 		input_stream = gsf_infile_child_by_index (infile, i);
 		output_stream = gsf_outfile_new_child (
 			outfile,
-			gsf_infile_name_by_index(infile, i),
-			FALSE);
+			child_name,
+			is_dir);
 
-		if (0 == strcmp (stream_name, "Workbook")) {
-			/* printf("Workbook stream found\n"); */
-			decrypt ();
-		} else if (0 == strcmp (stream_name, "Revision Log")) {
-			/* printf("Revision Log stream found\n"); */
-			decrypt ();
-		} else if (0 == strcmp (stream_name, "_SX_DB_CUR")) {
+		if (is_dir) {
 			/* Pivot Cache storage */
  /* See http://msdn.microsoft.com/en-us/library/dd910065(v=office.12).aspx */ 
-			/* printf("Pivot Cache storage found\n"); */
-			decrypt ();
+			if (0 == strcmp (child_name, "_SX_DB_CUR")) {
+				/* printf("Pivot Cache storage found\n"); */
+				copy_or_decrypt_tree (
+					1, /* decrypt */
+					GSF_INFILE (input_stream),
+					GSF_OUTFILE (output_stream));
+			} else {
+				copy_or_decrypt_tree (
+					0, /* copy */
+					GSF_INFILE (input_stream),
+					GSF_OUTFILE (output_stream));
+			}
+                        /* Note: copy_or_decrypt_tree may have changed
+                         * input_stream or output_stream by this point, but
+                         * we don't use those variables after here. */
 		} else {
-			copy ();
+			if (0 == strcmp (child_name, "Workbook")) {
+				/* printf("Workbook stream found\n"); */
+				decrypt ();
+			} else if (0 == strcmp (child_name, "Revision Log")) {
+				/* printf("Revision Log stream found\n"); */
+				decrypt ();
+			} else {
+				copy ();
+			}
 		}
-
 	}
 
 	gsf_output_close(GSF_OUTPUT(outfile));
