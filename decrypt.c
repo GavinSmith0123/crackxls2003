@@ -340,17 +340,14 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 
 		gboolean is_dir;
 
+		input_stream = gsf_infile_child_by_index (infile, i);
+
 		/* Check if child is a storage (storages in OLE compound
                  * files are like subdirectories) */
 		is_dir = (GSF_IS_INFILE (input_stream) &&
 			gsf_infile_num_children (GSF_INFILE(input_stream))
 			>= 0);
 
-		/* Global variables used by copy() or decrypt() functions
-		 * We may also pass the values to copy_or_decrypt_tree(),
-		 * which will end up redefining the global variables when
-		 * it calls copy() or decrypt() itself */
-		input_stream = gsf_infile_child_by_index (infile, i);
 		output_stream = gsf_outfile_new_child (
 			outfile,
 			child_name,
