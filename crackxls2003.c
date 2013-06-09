@@ -236,7 +236,7 @@ extern void extract_doc (const char *file_name, unsigned char *FilePass);
 
 void load_data_from_file (const char *file_name)
 {
-	unsigned char FilePass[54];
+	unsigned char verifier_and_hash[32];
 	const char *extension;
 
 	if (strlen(file_name) <= 4) {
@@ -249,10 +249,10 @@ void load_data_from_file (const char *file_name)
 	if (0 == strcmp(".xls", extension) ||
 	    0 == strcmp(".XLS", extension)) {
 		printf ("xls found\n");
-		extract (file_name, FilePass);
+		extract (file_name, verifier_and_hash);
 	} else if (0 == strcmp(".doc", extension) ||
 	           0 == strcmp(".DOC", extension)) {
-		extract_doc (file_name, FilePass);
+		extract_doc (file_name, verifier_and_hash);
 	} else {
 		fprintf(stderr, "Error: file extension not recognized\n");
 		exit(1);
@@ -260,9 +260,9 @@ void load_data_from_file (const char *file_name)
 	
 	/* print_hex(FilePass, 55); */
 
-	memcpy (data + 16, FilePass + 22, 16); /* EncryptedVerifier */
+	memcpy (data + 16, verifier_and_hash, 16); /* EncryptedVerifier */
 	// print_hex (data + 16, 16);
-	memcpy (data, FilePass + 38, 16); /* EncryptedVerifierHash */
+	memcpy (data, verifier_and_hash + 16, 16); /* EncryptedVerifierHash */
 	// print_hex (data, 16);
 	
 

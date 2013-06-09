@@ -26,7 +26,8 @@
 #include "pole.h"
 
 
-extern "C" void extract(const char *file_name, unsigned char *record_out) {
+extern "C" void extract(const char *file_name,
+                        unsigned char *verifier_and_hash) {
   POLE::Storage* storage = new POLE::Storage(file_name );
   storage->open();
   if( storage->result() != POLE::Storage::Ok )
@@ -57,9 +58,13 @@ extern "C" void extract(const char *file_name, unsigned char *record_out) {
 
 	switch (id) {
 	case 0x002f: //FilePass
+// See http://msdn.microsoft.com/en-us/library/dd952596(v=office.12).aspx and
+// http://msdn.microsoft.com/en-us/library/dd908560(v=office.12).aspx
 		{
 		// extract data
-		n = stream->read(record_out, size);
+		unsigned char FilePass[54];
+		n = stream->read(FilePass, size);
+		memcpy(verifier_and_hash, FilePass + 22, 32);
 		return;
 		}
 	default:
