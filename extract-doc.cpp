@@ -38,10 +38,11 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
   }
 
   // Check File Information Block to see if document is encrypted
+
   POLE::Stream* stream = new POLE::Stream( storage, "WordDocument" );
   if (!stream || stream->fail() ) {
 	std::cerr << "Could not open stream\n";
-	return;
+	exit(1);
   }
 
   // FibBase should be at the beginning of the WordDocument stream
@@ -51,11 +52,26 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
 
   if (! (wIdent[0] == 0xEC && wIdent[1] == 0xA5 )) {
     std::cerr << "FibBase not found\n";
-  } else {
-    std::cerr << "FibBase found\n";
+    exit(1);
+    return;
   }
 
-  return;
+  // fEncrypted is in 12th byte of FibBase. 2 bytes have been read
+  // already and 12 = 2 + 10.
+  unsigned char byte;
+  for (int i = 1; i <= 10; i++) {
+  	n = stream->read(&byte, 1);
+	if (n != 1) {
+		std::cerr << "Error reading FibBase\n";
+		exit(1);
+	}
+  }
+
+  if ((byte & 0x01) == 0) {
+	std::cerr << "File is not encrypted\n";
+	exit(1);
+  }
+  	
 
 
   while (1) {
