@@ -232,11 +232,31 @@ void read_hex (uint8_t *target, char *source, int n)
 
 
 extern void extract (const char *file_name, unsigned char *FilePass);
+extern void extract_doc (const char *file_name, unsigned char *FilePass);
 
 void load_data_from_file (const char *file_name)
 {
 	unsigned char FilePass[54];
-	extract (file_name, FilePass);
+	const char *extension;
+
+	if (strlen(file_name) <= 4) {
+		fprintf(stderr, "Error: file name too short\n");
+		exit(1);
+	}
+	extension = file_name + strlen(file_name) - 4;
+
+	/* Check if it is a Word or Excel file */
+	if (0 == strcmp(".xls", extension) ||
+	    0 == strcmp(".XLS", extension)) {
+		printf ("xls found\n");
+		extract (file_name, FilePass);
+	} else if (0 == strcmp(".doc", extension) ||
+	           0 == strcmp(".DOC", extension)) {
+		extract_doc (file_name, FilePass);
+	} else {
+		fprintf(stderr, "Error: file extension not recognized\n");
+		exit(1);
+	}
 	
 	/* print_hex(FilePass, 55); */
 
