@@ -6,6 +6,8 @@ cd test-files
 ../crackxls2003 -t -s "75 61 25 d0 6d" 4qwer.xls
 ../crackxls2003 -t -s "00 00 00 9c de" ape\$dog.xls
 
+../crackxls2003 -t -s '00 00 20 b1 b5' 4qwer.doc
+
 echo Testing decryption
 rm testout.xls
 ../crackxls2003 -d  "9c a7 4a 7b 84" testdoc.xls testout.xls

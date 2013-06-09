@@ -26,6 +26,8 @@
 #include "pole.h"
 
 // Extract encryption data from Microsoft Word file
+// Place 32 bytes at record_out, 16 byte EncryptedVerifier followed by
+// 16 byte EncryptedVerifierHash
 extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
   int n; // Used for number of bytes read
   POLE::Storage* storage = new POLE::Storage(file_name );
@@ -41,7 +43,7 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
 
   POLE::Stream* stream = new POLE::Stream( storage, "WordDocument" );
   if (!stream || stream->fail() ) {
-	std::cerr << "Could not open stream\n";
+	std::cerr << "Could not open WordDocument stream\n";
 	exit(1);
   }
 
@@ -71,35 +73,22 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
 	std::cerr << "File is not encrypted\n";
 	exit(1);
   }
-  	
+ 
+  // Look for encryption header in 1Table or 0Table stream
+  // See http://msdn.microsoft.com/en-us/library/dd923367(v=office.12).aspx
+  // and http://msdn.microsoft.com/en-us/library/dd908560(v=office.12).aspx
 
-
-  while (1) {
-	int n; //number of bytes read;
-
-	// read record_id and record_size
-	unsigned char id_and_size[4];
-	n = stream->read(id_and_size, 4);
-	
-	if (n < 4) return;
-	
-	int id = id_and_size[0] + (id_and_size[1] << 8);
-	int size = id_and_size[2] + (id_and_size[3] << 8);
-	// std::cerr << id << "/" << size << "\n";
-
-	switch (id) {
-	case 0x002f: //FilePass
-		{
-		// extract data
-		n = stream->read(record_out, size);
-		return;
-		}
-	default:
-		// advance to next record
-		stream->seek(stream->tell() + size);
-		if (stream->eof()) return;
-	}
-	  
+  delete stream;
+  stream = new POLE::Stream( storage, "1Table" );
+  if (!stream || stream->fail() ) {
+	stream = new POLE::Stream( storage, "0Table" );
   }
+  if (!stream || stream->fail() ) {
+	std::cerr << "Couldn't open 1Table or 0Table stream\n";
+	exit(1);
+  }
+  unsigned char EncryptionHeader[52];
+  n = stream->read(EncryptionHeader, 52);
+  memcpy(record_out, EncryptionHeader + 20, 32);
 }
 
