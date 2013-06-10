@@ -264,8 +264,6 @@ void load_data_from_file (const char *file_name)
 	// print_hex (data + 16, 16);
 	memcpy (data, verifier_and_hash + 16, 16); /* EncryptedVerifierHash */
 	// print_hex (data, 16);
-	
-
 }
 
 /* Use getopt() to parse command line */
