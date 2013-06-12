@@ -92,7 +92,7 @@ void cracking_stats (void)
 	mpz_sub_ui(mpz_low, mpz_low, real_key_start[0]);
 	mpz_add_ui(mpz_low, mpz_low, 1);
 	mpz_add (n_keys, n_keys, mpz_low);
-	
+
 	n_keys_str = mpz_get_str (NULL, 10, n_keys);
 	printf("Number of keys tested: %s\n", n_keys_str);
 	free (n_keys_str);
@@ -101,13 +101,13 @@ void cracking_stats (void)
 	mpf_init (n_keys_f);
 	mpf_set_z (n_keys_f, n_keys);
 	mpf_init_set_d (mpf_time_used, time_used);
-	mpf_div (n_keys_f, n_keys_f, mpf_time_used); 
+	mpf_div (n_keys_f, n_keys_f, mpf_time_used);
 
 	keys_per_second = mpf_get_d (n_keys_f);
 	printf("Number of keys tested / second: %f\n", keys_per_second);
 #endif /* HAVE_LIBGMP */
 }
-	
+
 
 void test_pass (void)
 {
@@ -119,7 +119,7 @@ void test_pass (void)
 #ifdef USE_ASM
 	/* places result in "md5" */
 	extern void md5_compress(uint32_t *state, uint32_t *block);
-	
+
 	md5[0] = 0x67452301;
 	md5[1] = 0xEFCDAB89;
 	md5[2] = 0x98BADCFE;
@@ -135,18 +135,18 @@ void test_pass (void)
 	md5_ctx.d = 0x10325476;
 
 	md5_body(&md5_ctx, real_key, 64);
-	md5[0] = md5_ctx.a; 
-	md5[1] = md5_ctx.b; 
-	md5[2] = md5_ctx.c; 
-	md5[3] = md5_ctx.d; 
+	md5[0] = md5_ctx.a;
+	md5[1] = md5_ctx.b;
+	md5[2] = md5_ctx.c;
+	md5[3] = md5_ctx.d;
 #endif
 
 	/* Decrypts bytes 32-63 then 0-31 of hash_and_verifier */
 
 	RC4_KEY k;
-	RC4_set_key (&k, 16, (unsigned char *) md5); 
-	RC4 (&k, 16, data+16, hash_and_verifier+16); 
-	RC4 (&k, 16, data, hash_and_verifier); 
+	RC4_set_key (&k, 16, (unsigned char *) md5);
+	RC4 (&k, 16, data+16, hash_and_verifier+16);
+	RC4 (&k, 16, data, hash_and_verifier);
 
 	/* Check hash */
 
@@ -165,10 +165,10 @@ void test_pass (void)
 	md5_ctx.d = 0x10325476;
 
 	md5_body(&md5_ctx, hash_and_verifier + 16, 64);
-	md5[0] = md5_ctx.a; 
-	md5[1] = md5_ctx.b; 
-	md5[2] = md5_ctx.c; 
-	md5[3] = md5_ctx.d; 
+	md5[0] = md5_ctx.a;
+	md5[1] = md5_ctx.b;
+	md5[2] = md5_ctx.c;
+	md5[3] = md5_ctx.d;
 #endif
 
 	if (0 == memcmp (md5, hash_and_verifier, 16)) {
@@ -252,7 +252,6 @@ void load_data_from_file (const char *file_name)
 	if (0 == strcmp(".xls", extension) ||
 	    0 == strcmp(".XLS", extension)) {
 		is_doc = 0;
-		printf ("xls found\n");
 		extract (file_name, verifier_and_hash);
 	} else if (0 == strcmp(".doc", extension) ||
 	           0 == strcmp(".DOC", extension)) {
@@ -262,7 +261,7 @@ void load_data_from_file (const char *file_name)
 		fprintf(stderr, "Error: file extension not recognized\n");
 		exit(1);
 	}
-	
+
 	/* print_hex(FilePass, 55); */
 
 	memcpy (data + 16, verifier_and_hash, 16); /* EncryptedVerifier */
@@ -292,7 +291,7 @@ void parse_cmd(int argc, char **argv)
 		c = getopt_long (argc, argv, "s:td:", options, &option_idx);
 
 		if (c == -1) break; /* End of options */
-		
+
 		switch (c) {
 		case 's': /* '--start' */
 			{
@@ -300,10 +299,10 @@ void parse_cmd(int argc, char **argv)
 			int n;
 
 			n = sscanf (optarg, "%hhx %hhx %hhx %hhx %hhx",
-				&real_key8[0], 
-				&real_key8[1], 
-				&real_key8[2], 
-				&real_key8[3], 
+				&real_key8[0],
+				&real_key8[1],
+				&real_key8[2],
+				&real_key8[3],
 				&real_key8[4]);
 			if (n != 5) {
 				fprintf(stderr,
@@ -323,10 +322,10 @@ void parse_cmd(int argc, char **argv)
 			int n;
 
 			n = sscanf (optarg, "%hhx %hhx %hhx %hhx %hhx",
-				&real_key8[0], 
-				&real_key8[1], 
-				&real_key8[2], 
-				&real_key8[3], 
+				&real_key8[0],
+				&real_key8[1],
+				&real_key8[2],
+				&real_key8[3],
 				&real_key8[4]);
 			if (n != 5) {
 				fprintf(stderr,

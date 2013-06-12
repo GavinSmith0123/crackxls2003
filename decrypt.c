@@ -482,7 +482,7 @@ void decrypt_file (const char *infile_name, const char *outfile_name,
 
 		if (is_dir) {
 			/* Pivot Cache storage */
- /* See http://msdn.microsoft.com/en-us/library/dd910065(v=office.12).aspx */ 
+ /* See http://msdn.microsoft.com/en-us/library/dd910065(v=office.12).aspx */
 			if (0 == strcmp (child_name, "_SX_DB_CUR")) {
 				/* printf("Pivot Cache storage found\n"); */
 				copy_or_decrypt_tree (
