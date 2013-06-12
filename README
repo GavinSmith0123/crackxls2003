@@ -1,13 +1,22 @@
-crackxls2003
+crackxls2003 0.3
 
-This program may be used to break the encryption on Microsoft Excel
-XP/2002/2003 files which have been encrypted using the RC4 method. These
-files are encrypted using a 40-bit-long key. It will not work on files
-encrypted using later versions or versions 8.0 or earlier.
+This program may be used to break the encryption on Microsoft Excel and
+Microsoft Word file which have been encrypted using the RC4 method, which
+uses a 40-bit-long key.
+
+This was the default encryption method in Word and Excel
+97/2000/2002/2003. This program will not work on files encrypted using Word
+or Excel 2007 or later, or for versions 95 or earlier. It will not work if
+a file was encrypted with a non-default method. Additionally, documents
+created with the Windows system locale set to France may use a different
+encryption method.
+
+The password used to open and view the file should not be confused with a
+password required to edit its contents - this program is to bypass the former.
 
 Run the command with
 
-$ ./crackxls2003 [filename.xls]
+./crackxls2003 [filename.xls]
 
 The program will read what it needs from the file and print its progress
 in working through the possible keys. You can stop the program and resume
@@ -15,15 +24,18 @@ where you left off by using the "--start" or "-s" option, whose argument
 is 5 hexadecimal bytes separated by spaces, and specifies a key to start
 searching from. Example:
 
-$ ./crackxls2003 -s "00 00 00 00 00" file.xls
+./crackxls2003 -s "00 00 00 00 00" file.xls
 
 The program will display a working key if it finds one.
+
+The program is quite slow - on my computer it takes about a month to check
+through the whole key-space.
 
 Once a working key is found, crackxls2003 may be used to decrypt the file
 using the "--decrypt" or "-d" option, followed by the name of the file to
 be decrypted, and the name of the unencrypted file to be created. Example:
 
-$ ./crackxls2003 -d "1d da 30 05 8f" file.xls file-out.xls
+./crackxls2003 -d "1d da 30 05 8f" file.xls file-out.xls
 
 The "--test-speed" or "-t" option calculates the number of keys which are
 tested per second.
