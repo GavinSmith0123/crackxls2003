@@ -221,7 +221,42 @@ void decrypt_record (void)
 	block_pos += size;
 }
 
-/* Decrypt input_stream to output_stream */
+/* Decrypt input_stream to output_stream, skipping "skip" bytes (Word) */
+void decrypt_doc_stream (unsigned int skip)
+{
+	int len;
+
+	if (gsf_input_size (input_stream) > 0) {
+		block_number = 0;
+		block_pos = 0;
+		calculate_rc4_key ();
+
+		/* Copy "skip" bytes in the clear */
+		dump_decrypt (skip, 1);
+
+		block_number += (skip / 512);
+		block_pos += skip % 512;
+		calculate_rc4_key ();
+
+		/* First iteration of loop may decrypt less than 512
+		 * bytes if bytes were skipped */
+		while ((len = gsf_input_remaining (input_stream)) > 0) {
+			if (len > 512 - block_pos)
+				len = 512 - block_pos;
+			dump_decrypt(len, 0);
+
+			block_number++;
+			block_pos = 0;
+			calculate_rc4_key ();
+		}
+
+		gsf_output_close(output_stream);
+		g_object_unref (G_OBJECT (output_stream));
+	}
+	g_object_unref (G_OBJECT (input_stream));
+}
+
+/* Decrypt input_stream to output_stream (Excel) */
 void decrypt (void)
 {
 	if (gsf_input_size (input_stream) > 0) {
@@ -246,7 +281,8 @@ void decrypt (void)
 	g_object_unref (G_OBJECT (input_stream));
 }
 
-/* Copy input_stream to output_stream */
+/* Copy input_stream to output_stream. Ought to work for both Word and
+ * Excel files. */
 void copy (void)
 {
 	if (gsf_input_size (input_stream) > 0) {
@@ -307,6 +343,78 @@ void copy_or_decrypt_tree (int decryptp,
 				GSF_OUTFILE (child_out));
 		}
 	}
+}
+
+void decrypt_doc (const char *infile_name, const char *outfile_name,
+                   uint8_t *key)
+{
+	int i;
+	GsfInput *input;
+	GsfOutput *output;
+	GsfInfile *infile;
+	GsfOutfile *outfile;
+
+	gsf_init ();
+
+	/* Load input file for reading */
+	input = gsf_input_stdio_new (infile_name, &err);
+	infile = gsf_infile_msole_new (input, &err);
+	g_object_unref (G_OBJECT (input));
+
+	/* Load output file for writing */
+	output = gsf_output_stdio_new (outfile_name, &err);
+	outfile = gsf_outfile_msole_new (output);
+	g_object_unref (G_OBJECT (output));
+
+	/* Copy encryption key from arguments */
+	for (i = 0; i < 5; i++) {
+		real_key[i] = key[i];
+	}
+
+	for (i = 0 ; i < gsf_infile_num_children (infile) ; i++) {
+		const char *child_name = gsf_infile_name_by_index(infile, i);
+
+		gboolean is_dir;
+
+		input_stream = gsf_infile_child_by_index (infile, i);
+
+		/* Check if child is a storage (storages in OLE compound
+                 * files are like subdirectories) */
+		is_dir = (GSF_IS_INFILE (input_stream) &&
+			gsf_infile_num_children (GSF_INFILE(input_stream))
+			>= 0);
+
+		output_stream = gsf_outfile_new_child (
+			outfile,
+			child_name,
+			is_dir);
+
+/* See http://msdn.microsoft.com/en-us/library/dd945648(v=office.12).aspx */
+		if (is_dir) {
+			/* No encrypted storages */
+			copy_or_decrypt_tree (
+				0, /* copy */
+				GSF_INFILE (input_stream),
+				GSF_OUTFILE (output_stream));
+                        /* Note: copy_or_decrypt_tree may have changed
+                         * input_stream or output_stream by this point, but
+                         * we don't use those variables after here. */
+		} else {
+			if (0 == strcmp (child_name, "1Table") ||
+			    0 == strcmp (child_name, "0Table")) {
+				decrypt_doc_stream(52);
+			} else if (0 == strcmp (child_name, "WordDocument")) {
+				decrypt_doc_stream(68);
+			} else if (0 == strcmp (child_name, "Data")) {
+				decrypt_doc_stream(0);
+			} else {
+				copy ();
+			}
+		}
+	}
+
+	gsf_output_close(GSF_OUTPUT(outfile));
+	gsf_shutdown ();
 }
 
 void decrypt_file (const char *infile_name, const char *outfile_name,

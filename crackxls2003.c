@@ -56,6 +56,9 @@ uint32_t real_key[16];
 /* Used to calculate the total number of keys tested */
 uint32_t real_key_start[2];
 
+/* Whether we have a .doc or .xls file. */
+int is_doc;
+
 void print_hex (uint8_t *array, int n);
 
 void cracking_stats (void)
@@ -248,10 +251,12 @@ void load_data_from_file (const char *file_name)
 	/* Check if it is a Word or Excel file */
 	if (0 == strcmp(".xls", extension) ||
 	    0 == strcmp(".XLS", extension)) {
+		is_doc = 0;
 		printf ("xls found\n");
 		extract (file_name, verifier_and_hash);
 	} else if (0 == strcmp(".doc", extension) ||
 	           0 == strcmp(".DOC", extension)) {
+		is_doc = 1;
 		extract_doc (file_name, verifier_and_hash);
 	} else {
 		fprintf(stderr, "Error: file extension not recognized\n");
@@ -342,9 +347,15 @@ void parse_cmd(int argc, char **argv)
 	}
 	file_name = argv[optind];
 
+	load_data_from_file (file_name);
+	printf("Data successfully loaded from %s\n", file_name);
+
 	if (decrypt_flag) {
 #ifdef HAVE_LIBGSF
 		extern void decrypt_file
+			(const char *infile, const char *outfile,
+		         uint8_t *key);
+		extern void decrypt_doc
 			(const char *infile, const char *outfile,
 		         uint8_t *key);
 
@@ -356,7 +367,13 @@ void parse_cmd(int argc, char **argv)
 
 		char *output_file = argv[optind + 1];
 		printf ("Input %s\nOutput %s\n", file_name, output_file);
-		decrypt_file(file_name, output_file, (uint8_t *) real_key);
+		if (!is_doc) {
+			decrypt_file(file_name, output_file,
+			             (uint8_t *) real_key);
+		} else {
+			decrypt_doc(file_name, output_file,
+			                 (uint8_t *) real_key);
+		}
 #else
 		fprintf(stderr,
 			"Support for decryption was disabled at "
@@ -365,8 +382,6 @@ void parse_cmd(int argc, char **argv)
 		exit (0);
 	}
 
-	load_data_from_file (file_name);
-	printf("Data successfully loaded from %s\n", file_name);
 
 	/* Initialise real_key to point to low level md5 64-byte block */
 	/* This may be used by some choices of algorithm */
