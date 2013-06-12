@@ -221,8 +221,10 @@ void decrypt_record (void)
 	block_pos += size;
 }
 
-/* Decrypt input_stream to output_stream, skipping "skip" bytes (Word) */
-void decrypt_doc_stream (unsigned int skip)
+/* Decrypt input_stream to output_stream, skipping "skip" bytes (Word)
+ * The second argument says whether we are in a WordDocument stream, and
+ * thus whether to change the value of FibBase.fEncrypted. */
+void decrypt_doc_stream (unsigned int skip, int is_wd_stream)
 {
 	int len;
 
@@ -232,7 +234,24 @@ void decrypt_doc_stream (unsigned int skip)
 		calculate_rc4_key ();
 
 		/* Copy "skip" bytes in the clear */
-		dump_decrypt (skip, 1);
+		if (is_wd_stream) {
+			unsigned char c;
+
+			dump_decrypt (11, 1);
+
+			/* Clear FibBase.fEncrypted, which is in 12th
+			 * byte of stream */
+			if (0 == gsf_input_read (input_stream, 1, &c)) {
+				fprintf(stderr, "Error reading file\n");
+				exit(1);
+			}
+
+			c &= 0xFE;
+			put (&c, 1);
+			dump_decrypt (skip - 12, 1);
+		} else {
+			dump_decrypt (skip, 1);
+		}
 
 		block_number += (skip / 512);
 		block_pos += skip % 512;
@@ -402,11 +421,11 @@ void decrypt_doc (const char *infile_name, const char *outfile_name,
 		} else {
 			if (0 == strcmp (child_name, "1Table") ||
 			    0 == strcmp (child_name, "0Table")) {
-				decrypt_doc_stream(52);
+				decrypt_doc_stream(52, 0);
 			} else if (0 == strcmp (child_name, "WordDocument")) {
-				decrypt_doc_stream(68);
+				decrypt_doc_stream(68, 1);
 			} else if (0 == strcmp (child_name, "Data")) {
-				decrypt_doc_stream(0);
+				decrypt_doc_stream(0, 0);
 			} else {
 				copy ();
 			}
