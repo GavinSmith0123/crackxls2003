@@ -59,6 +59,15 @@ $ PATH=/mingw/bin:$PATH cygcheck ...
 
 "ldd" can be used for the same thing.
 
+Once I compiled and installed all the library dependencies, I compiled
+crackxls2003 with
+
+./configure --prefix=/mingw \
+--build=i686-pc-cygwin --host=i686-w64-mingw32 \
+CFLAGS=-I/mingw/include CPPFLAGS=-I/mingw/include \
+CXXFLAGS=-I/mingw/include LDFLAGS='-static -L/mingw/lib' \
+PKG_CONFIG_PATH=/usr/i686-w64-mingw32/lib/pkgconfig:/mingw/lib/pkgconfig
+
 Once you succeed in building crackxls2003.exe, if it depends on DLL's under
 /mingw/bin, you will have to set the search path as above.
 
