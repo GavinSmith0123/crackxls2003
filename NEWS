@@ -1,3 +1,7 @@
+Version 0.3 (14-Jun-2013)
+- Support of Microsoft Word files
+- More complete adherence to official description of encryption method
+
 Version 0.2 (30-Mar-2013)
 - Optional support for decrypting using the libgsf library
 
