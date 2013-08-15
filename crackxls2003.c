@@ -24,6 +24,10 @@
 #include <stdint.h>
 #include <getopt.h>
 
+#include <iconv.h>
+#include <locale.h>
+#include <errno.h>
+
 #include <time.h>
 #ifdef HAVE_LIBGMP
 #include <gmp.h>
@@ -276,6 +280,10 @@ void parse_cmd(int argc, char **argv)
 	int c;
 	int decrypt_flag = 0;
 
+	/* UTF-16 string of password to be confirmed and its length */
+	char *pass16 = 0;
+	int len16 = 0;
+
 	memset(real_key, 0, 64);
 
 	while (1) {
@@ -284,11 +292,12 @@ void parse_cmd(int argc, char **argv)
 		 {"start", required_argument, 0, 's'},
 		 {"test-speed", no_argument, 0, 't'},
 		 {"decrypt", required_argument, 0, 'd'},
+		 {"test-password", required_argument, 0, 'P'},
 		 {0, 0, 0, 0}
 		};
 		int option_idx = 0;
 
-		c = getopt_long (argc, argv, "s:td:", options, &option_idx);
+		c = getopt_long (argc, argv, "s:td:P:", options, &option_idx);
 
 		if (c == -1) break; /* End of options */
 
@@ -334,6 +343,82 @@ void parse_cmd(int argc, char **argv)
 			}
 			break;
 			}
+		case 'P': /* --test-password */
+			{
+			char *pass = optarg;
+			wchar_t *pass_wchar;
+			int len = strlen(pass) + 1; /* No. of input bytes */
+			int wlen; /* Number of characters */
+			int wbytes; /* No. of bytes in wchar_t string */
+		       	pass_wchar = malloc(len * sizeof(wchar_t));
+
+			printf ("Asked to test %s\n", pass);
+
+			/* Convert parameter to UTF-16 string (depends on
+			 * locale (LC_CTYPE)) */
+
+			/* Some implementations of iconv may be able to
+			 * refer to the encoding in LC_CTYPE using the empty
+			 * string. However, it's uncertain whether this is
+			 * standard, as this feature is not documented in
+			 * many places. Hence, we have to convert from LC_CTYPE
+			 * to WCHAR first, and only from WCHAR to UTF-16
+			 * afterwards. */
+
+			/* Get locale from environmental variables */
+			setlocale(LC_CTYPE, "");
+
+			wlen = mbstowcs(pass_wchar, pass, len);
+			if (wlen == -1) {
+				printf("Error converting password\n");
+				exit (1);
+			}
+			wbytes = wlen * sizeof(wchar_t);
+
+			print_hex(pass_wchar, wbytes);
+			
+
+			/* Convert from wchar format to UTF-16 */
+
+			/* At most 4 bytes per character in UTF-16 */
+			int nbytes16 = wlen * 4;
+			pass16 = malloc (nbytes16);
+
+			/* iconv() requires an argument of type (char **). We
+			 * shall pass it &wptr. */
+			char *wptr = (char *) pass_wchar;
+
+			/* iconv alters &ptr16 but we need the
+			 * original value */
+			char *ptr16 = pass16;
+
+			/* Using UTF-16LE (as opposed to UTF-16) does not
+			 * output a byte order mark 0xFFFE */
+			iconv_t cd;
+			cd = iconv_open("UTF-16LE", "WCHAR_T");
+			if (cd == (iconv_t) -1) {
+				printf("Conversion to UTF-16LE not available");
+				exit(1);
+			}
+
+			/* Perform conversion */
+			int iconv_ret = iconv(cd, &wptr, &wbytes,
+				          &ptr16, &nbytes16);
+
+			if (iconv_ret == -1 || wbytes != 0) {
+				printf("Failed to convert password to "
+						"UTF-16LE\n");
+				exit(1);
+			}
+			iconv_close(cd);
+			
+			len16 = ptr16 - pass16;
+
+			printf("Password converted to UTF-16 as ");
+			print_hex(pass16, ptr16 - pass16);
+
+			exit (1);
+			}
 		case '?':
 			exit (1);
 			break;
@@ -345,6 +430,15 @@ void parse_cmd(int argc, char **argv)
 		exit (1);
 	}
 	file_name = argv[optind];
+
+	/* If "-P" was given */
+	if (pass16) {
+		/* Check for non-supported option combination */
+		if (decrypt_flag) {
+			printf("Please specify at most one of -d and -P\n");
+		}
+		exit(0);
+	}
 
 	load_data_from_file (file_name);
 	printf("Data successfully loaded from %s\n", file_name);
