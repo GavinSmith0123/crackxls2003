@@ -47,6 +47,8 @@ clock_t start_time, end_time;
 /* encrypted hash_and_verifier */
 uint8_t data[32];
 
+/* Password salt read from target document. */
+uint8_t password_salt[32];
 /* we will take the md5 hash of the last 16 bytes */
 /* 80 = 16 + 16 + 48 */
 uint8_t hash_and_verifier[80];
@@ -243,7 +245,8 @@ extern void extract_doc (const char *file_name, unsigned char *FilePass);
 
 void load_data_from_file (const char *file_name)
 {
-	unsigned char verifier_and_hash[32];
+  /* See http://msdn.microsoft.com/en-us/library/dd908560(v=office.12).aspx */
+	unsigned char verifier_and_hash[48];
 	const char *extension;
 
 	if (strlen(file_name) <= 4) {
@@ -268,9 +271,9 @@ void load_data_from_file (const char *file_name)
 
 	/* print_hex(FilePass, 55); */
 
-	memcpy (data + 16, verifier_and_hash, 16); /* EncryptedVerifier */
+	memcpy (data + 16, verifier_and_hash + 16, 16); /* EncryptedVerifier */
 	// print_hex (data + 16, 16);
-	memcpy (data, verifier_and_hash + 16, 16); /* EncryptedVerifierHash */
+	memcpy (data, verifier_and_hash + 32, 16); /* EncryptedVerifierHash */
 	// print_hex (data, 16);
 }
 
@@ -431,15 +434,6 @@ void parse_cmd(int argc, char **argv)
 	}
 	file_name = argv[optind];
 
-	/* If "-P" was given */
-	if (pass16) {
-		/* Check for non-supported option combination */
-		if (decrypt_flag) {
-			printf("Please specify at most one of -d and -P\n");
-		}
-		exit(0);
-	}
-
 	load_data_from_file (file_name);
 	printf("Data successfully loaded from %s\n", file_name);
 
@@ -482,6 +476,23 @@ void parse_cmd(int argc, char **argv)
 	real_key8  = (uint8_t *) real_key;
 	real_key8[9] = 0x80; /* bit at end of data */
 	real_key8[56] = 0x48; /*correct way to represent 9 */
+
+	/* If "-P" was given */
+	if (pass16) {
+		/* Check for non-supported option combination */
+		if (decrypt_flag) {
+			printf("Please specify at most one of -d and -P.\n");
+			exit (1);
+		}
+		/* Defined in passwords.c */
+		void convert_user_password(uint8_t real_key[5],
+			uint8_t *user_pass, int len, uint8_t salt[16]);
+
+		convert_user_password(real_key8, pass16, len16, password_salt);
+		test_pass (); /* Exits if successful */
+		printf("Password was incorrect.");
+		exit(0);
+	}
 }
 
 void catch_signal (int sig)

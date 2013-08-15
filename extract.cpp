@@ -25,9 +25,13 @@
 
 #include "pole.h"
 
-
+// Extract encryption data from Microsoft Excel file
+// Place 48 bytes at enc_header:
+// 16 byte Salt, followed by
+// 16 byte EncryptedVerifier, followed by
+// 16 byte EncryptedVerifierHash
 extern "C" void extract(const char *file_name,
-                        unsigned char *verifier_and_hash) {
+                        unsigned char *enc_header) {
   POLE::Storage* storage = new POLE::Storage(file_name );
   storage->open();
   if( storage->result() != POLE::Storage::Ok )
@@ -64,7 +68,7 @@ extern "C" void extract(const char *file_name,
 		// extract data
 		unsigned char FilePass[54];
 		n = stream->read(FilePass, size);
-		memcpy(verifier_and_hash, FilePass + 22, 32);
+		memcpy(enc_header, FilePass + 6, 48);
 		return;
 		}
 	default:

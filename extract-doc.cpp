@@ -26,7 +26,9 @@
 #include "pole.h"
 
 // Extract encryption data from Microsoft Word file
-// Place 32 bytes at record_out, 16 byte EncryptedVerifier followed by
+// Place 48 bytes at record_out:
+// 16 byte Salt, followed by
+// 16 byte EncryptedVerifier, followed by
 // 16 byte EncryptedVerifierHash
 extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
   int n; // Used for number of bytes read
@@ -89,6 +91,6 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
   }
   unsigned char EncryptionHeader[52];
   n = stream->read(EncryptionHeader, 52);
-  memcpy(record_out, EncryptionHeader + 20, 32);
+  memcpy(record_out, EncryptionHeader + 4, 48);
 }
 
