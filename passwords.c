@@ -8,7 +8,7 @@
  * See http://msdn.microsoft.com/en-us/library/dd920360(v=office.12).aspx */
 
 void convert_user_password(
-		 const uint8_t real_key[5],
+		 uint8_t real_key[5],
 		 uint8_t *user_pass, int len, uint8_t salt[16])
 {
 	MD5_CTX md5_ctx;
@@ -16,7 +16,6 @@ void convert_user_password(
 
 	unsigned char intermediate[336];
 	int i;
-	print_hex (user_pass, 10);
 
 	/* Take md5 hash of user_pass */
 	MD5_Init (&md5_ctx);

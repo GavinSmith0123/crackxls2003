@@ -370,7 +370,7 @@ void parse_cmd(int argc, char **argv)
 			int wbytes; /* No. of bytes in wchar_t string */
 		       	pass_wchar = malloc(len * sizeof(wchar_t));
 
-			printf ("Asked to test %s\n", pass);
+			printf ("Testing password \"%s\"\n", pass);
 
 			/* Convert parameter to UTF-16 string (depends on
 			 * locale (LC_CTYPE)) */
@@ -392,9 +392,6 @@ void parse_cmd(int argc, char **argv)
 				exit (1);
 			}
 			wbytes = wlen * sizeof(wchar_t);
-
-			print_hex(pass_wchar, wbytes);
-			
 
 			/* Convert from wchar format to UTF-16 */
 
