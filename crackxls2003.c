@@ -40,6 +40,10 @@
 #include "solar-md5/md5.h"
 #include <openssl/rc4.h>
 
+/* Defined in passwords.c */
+void convert_user_password(uint8_t real_key[5],
+	uint8_t *user_pass, int len, uint8_t salt[16]);
+
 const char *file_name;
 int flag_test_speed = 0;
 clock_t start_time, end_time;
@@ -114,6 +118,23 @@ void cracking_stats (void)
 #endif /* HAVE_LIBGMP */
 }
 
+/* Must be called before test_pass() */
+void prepare_test (void)
+{
+       /* Initialise real_key to point to low level md5 64-byte block */
+       uint8_t *real_key8;
+       real_key8  = (uint8_t *) real_key;
+       real_key8[9] = 0x80; /* bit at end of data */
+       real_key8[56] = 0x48; /*correct way to represent 9 */
+
+       memset(hash_and_verifier, 0, sizeof(hash_and_verifier));
+       hash_and_verifier[32] = 0x80; /* bit at end of data */
+
+       /* last 64 bits represent 16 */
+       /* I obtained this value from a MD5 implementation that was known to
+        * work */
+       hash_and_verifier[72] = 0x80;
+}
 
 void test_pass (void)
 {
@@ -190,14 +211,7 @@ void test_pass (void)
 
 void crack_pass (void)
 {
-	memset(hash_and_verifier, 0, sizeof(hash_and_verifier));
-	hash_and_verifier[32] = 0x80; /* bit at end of data */
-
-	/* last 64 bits represent 16 */
-	/* I obtained this value from a MD5 implementation that was known to
-	 * work */
-	hash_and_verifier[72] = 0x80;
-
+	prepare_test();
 	if (flag_test_speed) {
 		start_time = clock();
 		real_key_start [0] = real_key [0];
@@ -246,7 +260,7 @@ extern void extract_doc (const char *file_name, unsigned char *FilePass);
 void load_data_from_file (const char *file_name)
 {
   /* See http://msdn.microsoft.com/en-us/library/dd908560(v=office.12).aspx */
-	unsigned char verifier_and_hash[48];
+	unsigned char enc_header[48];
 	const char *extension;
 
 	if (strlen(file_name) <= 4) {
@@ -259,11 +273,11 @@ void load_data_from_file (const char *file_name)
 	if (0 == strcmp(".xls", extension) ||
 	    0 == strcmp(".XLS", extension)) {
 		is_doc = 0;
-		extract (file_name, verifier_and_hash);
+		extract (file_name, enc_header);
 	} else if (0 == strcmp(".doc", extension) ||
 	           0 == strcmp(".DOC", extension)) {
 		is_doc = 1;
-		extract_doc (file_name, verifier_and_hash);
+		extract_doc (file_name, enc_header);
 	} else {
 		fprintf(stderr, "Error: file extension not recognized\n");
 		exit(1);
@@ -271,9 +285,10 @@ void load_data_from_file (const char *file_name)
 
 	/* print_hex(FilePass, 55); */
 
-	memcpy (data + 16, verifier_and_hash + 16, 16); /* EncryptedVerifier */
+	memcpy (password_salt, enc_header, 16); /* Salt */
+	memcpy (data + 16, enc_header + 16, 16); /* EncryptedVerifier */
 	// print_hex (data + 16, 16);
-	memcpy (data, verifier_and_hash + 32, 16); /* EncryptedVerifierHash */
+	memcpy (data, enc_header + 32, 16); /* EncryptedVerifierHash */
 	// print_hex (data, 16);
 }
 
@@ -420,7 +435,7 @@ void parse_cmd(int argc, char **argv)
 			printf("Password converted to UTF-16 as ");
 			print_hex(pass16, ptr16 - pass16);
 
-			exit (1);
+			break;
 			}
 		case '?':
 			exit (1);
@@ -489,8 +504,9 @@ void parse_cmd(int argc, char **argv)
 			uint8_t *user_pass, int len, uint8_t salt[16]);
 
 		convert_user_password(real_key8, pass16, len16, password_salt);
+		prepare_test ();
 		test_pass (); /* Exits if successful */
-		printf("Password was incorrect.");
+		printf("Password was incorrect.\n");
 		exit(0);
 	}
 }

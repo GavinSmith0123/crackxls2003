@@ -16,7 +16,7 @@ CXXFLAGS += -I. @DEFS@
 
 LDLIBS=$(OPT_LIBS) @LIBS@
 
-OBJS=crackxls2003.o pole.o extract.o extract-doc.o @OPT_OBJS@
+OBJS=crackxls2003.o pole.o extract.o extract-doc.o passwords.o @OPT_OBJS@
 
 # Need to use g++ for linking if want to use -static-libgcc -static-libstdc++
 # (See http://www.cygwin.com/ml/cygwin/2012-06/msg00304.html)
