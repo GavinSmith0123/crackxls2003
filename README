@@ -1,5 +1,7 @@
 crackxls2003 0.3
 
+(See INSTALL file for details on installing the program on your computer.)
+
 This program may be used to break the encryption on Microsoft Excel and
 Microsoft Word file which have been encrypted using the RC4 method, which
 uses a 40-bit-long key.
