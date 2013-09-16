@@ -202,6 +202,8 @@ void test_pass (void)
 		printf("Key found!\n");
 		printf("Key is ");
 		print_hex ((uint8_t *) real_key, 5);
+		printf("Now re-run crackxls2003 using -d option to decrypt "
+			"file (see README file for instructions)\n");
 		if (flag_test_speed) {
 			cracking_stats ();
 		}
