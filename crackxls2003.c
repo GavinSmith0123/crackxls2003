@@ -287,9 +287,13 @@ void load_data_from_file (const char *file_name)
 
 	memcpy (password_salt, enc_header, 16); /* Salt */
 	memcpy (data + 16, enc_header + 16, 16); /* EncryptedVerifier */
-	// print_hex (data + 16, 16);
 	memcpy (data, enc_header + 32, 16); /* EncryptedVerifierHash */
-	// print_hex (data, 16);
+
+	printf("Data successfully loaded from %s\n", file_name);
+
+	printf("Password salt is "); print_hex (password_salt, 16);
+	printf("Encrypted verifier is "); print_hex (data + 16, 16);
+	printf("Encrypted verifier hash is "); print_hex (data, 16);
 }
 
 /* Use getopt() to parse command line */
@@ -447,7 +451,6 @@ void parse_cmd(int argc, char **argv)
 	file_name = argv[optind];
 
 	load_data_from_file (file_name);
-	printf("Data successfully loaded from %s\n", file_name);
 
 	if (decrypt_flag) {
 #ifdef HAVE_LIBGSF
