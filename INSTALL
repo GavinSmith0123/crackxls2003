@@ -1,5 +1,15 @@
-This program depends on the OpenSSL library (http://www.openssl.org/). libgsf
-is also required if support for decrypting is enabled.
+For Microsoft Windows users, an executable file is included. This will
+likely only be updated every release. It was compiled on Windows Vista
+(32-bit version). It will probably work on other versions of Windows,
+although I have had a report of it crashing on Windows XP.
+
+If you are compiling it yourself, you will require
+
+ * The OpenSSL library (http://www.openssl.org/). Some Ubuntu users have
+ had trouble finding the right package to install, and the one they need
+ is called "libssl-dev".
+ * libgsf is also required if support for decrypting is enabled
+ * A C and C++ compiler such as gcc and g++
 
 Unix or GNU/Linux
 =================
