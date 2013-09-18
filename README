@@ -42,6 +42,11 @@ be decrypted, and the name of the unencrypted file to be created. Example:
 The "--test-speed" or "-t" option calculates the number of keys which are
 tested per second.
 
+The "--test-password" or "-P" password tests whether a particular password
+will open a file. For example, to test whether the password "4qwer" will
+open a file called "4qwer.doc", run "crackxls2003 -P 4qwer 4qwer.doc". This
+is expected to work even if there are non-ASCII characters in the password.
+
 See the INSTALL file for information on compiling, and LICENSE for copyright
 and licensing information.
 
