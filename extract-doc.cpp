@@ -75,7 +75,7 @@ extern "C" void extract_doc(const char *file_name, unsigned char *record_out) {
 	std::cerr << "File is not encrypted\n";
 	exit(1);
   }
- 
+
   // Look for encryption header in 1Table or 0Table stream
   // See http://msdn.microsoft.com/en-us/library/dd923367(v=office.12).aspx
   // and http://msdn.microsoft.com/en-us/library/dd908560(v=office.12).aspx

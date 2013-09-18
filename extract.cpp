@@ -76,7 +76,6 @@ extern "C" void extract(const char *file_name,
 		stream->seek(stream->tell() + size);
 		if (stream->eof()) return;
 	}
-	  
   }
 }
 
