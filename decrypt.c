@@ -34,16 +34,16 @@
 
 #include <setjmp.h>
 
-GError    *err = NULL;
+static GError    *err = NULL;
 
-GsfInput *input_stream;
-GsfOutput *output_stream;
+static GsfInput *input_stream;
+static GsfOutput *output_stream;
 
 /* decryption variables */
-uint8_t rc4_key[16];
-RC4_KEY rc4_state;
-uint32_t block_number;
-int block_pos; /* Position within 1024-byte block */
+static uint8_t rc4_key[16];
+static RC4_KEY rc4_state;
+static uint32_t block_number;
+static int block_pos; /* Position within 1024-byte block */
 
 /* First 5 bytes are the found encryption key */
 /* Following 4 bytes are block number (little endian?) */
@@ -110,7 +110,7 @@ void dump_decrypt (int n, int suppress_decryption)
 	put (decrypted_bytes, n);
 }
 
-jmp_buf jmp_decryption_finished;
+static jmp_buf jmp_decryption_finished;
 
 void decrypt_record (void)
 {
