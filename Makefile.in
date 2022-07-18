@@ -8,7 +8,8 @@ LDFLAGS=@LDFLAGS@
 OPT_CFLAGS=@LIBGSF_CFLAGS@ @LIBXML2_CFLAGS@
 OPT_LIBS=@LIBGSF_LIBS@ @LIBXML2_LIBS@
 
-OPTIM_FLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native     
+# OPTIM_FLAGS=-O5 -fomit-frame-pointer -march=native -mtune=native     
+
 CFLAGS += $(OPTIM_FLAGS)
 CFLAGS += -I. @DEFS@ $(OPT_CFLAGS)
 CXXFLAGS += $(OPTIM_FLAGS)
