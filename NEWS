@@ -1,3 +1,6 @@
+Version 1.0 (18-Jul-2022)
+- Various build fixes
+
 Version 0.4 (18-Sep-2013)
 - "-P" option added
 - More portable Windows executable included
