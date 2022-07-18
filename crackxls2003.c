@@ -44,30 +44,30 @@
 void convert_user_password(uint8_t real_key[5],
 	uint8_t *user_pass, int len, uint8_t salt[16]);
 
-const char *file_name;
-int flag_test_speed = 0;
-clock_t start_time, end_time;
+static const char *file_name;
+static int flag_test_speed = 0;
+static clock_t start_time, end_time;
 
 /* encrypted hash_and_verifier */
-uint8_t data[32];
+static uint8_t data[32];
 
 /* Password salt read from target document. */
-uint8_t password_salt[32];
+static uint8_t password_salt[32];
 /* we will take the md5 hash of the last 16 bytes */
 /* 80 = 16 + 16 + 48 */
-uint8_t hash_and_verifier[80];
+static uint8_t hash_and_verifier[80];
 
 /* First 5 bytes are the key space */
 /* 6th-9th bytes are 00 00 00 00 */
 /* md5 hash is taken of first 9 bytes */
 /* Full 64 bytes may be used in some implementation algorithms */
-uint32_t real_key[16];
+static uint32_t real_key[16];
 
 /* Used to calculate the total number of keys tested */
-uint32_t real_key_start[2];
+static uint32_t real_key_start[2];
 
 /* Whether we have a .doc or .xls file. */
-int is_doc;
+static int is_doc;
 
 void print_hex (uint8_t *array, int n);
 
