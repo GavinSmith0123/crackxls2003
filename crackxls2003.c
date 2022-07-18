@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Gavin Smith
+/* Copyright (C) 2013-2022 Gavin Smith
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -373,7 +373,7 @@ void parse_cmd(int argc, char **argv)
 			wchar_t *pass_wchar;
 			int len = strlen(pass) + 1; /* No. of input bytes */
 			int wlen; /* Number of characters */
-			int wbytes; /* No. of bytes in wchar_t string */
+			size_t wbytes; /* No. of bytes in wchar_t string */
 		       	pass_wchar = malloc(len * sizeof(wchar_t));
 
 			printf ("Testing password \"%s\"\n", pass);
@@ -402,7 +402,7 @@ void parse_cmd(int argc, char **argv)
 			/* Convert from wchar format to UTF-16 */
 
 			/* At most 4 bytes per character in UTF-16 */
-			int nbytes16 = wlen * 4;
+			size_t nbytes16 = wlen * 4;
 			pass16 = malloc (nbytes16);
 
 			/* iconv() requires an argument of type (char **). We
@@ -520,6 +520,7 @@ void catch_signal (int sig)
 	exit(0);
 }
 
+int
 main (int argc, char **argv)
 {
 #ifdef HAVE_SIGNAL_H
